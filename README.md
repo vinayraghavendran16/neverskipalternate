@@ -1,48 +1,117 @@
-# Northstar School OS — MVP
+# Northstar School OS
 
-An interaction-first school operating system prototype based on the Neverskip product teardown and replacement blueprint.
+The production foundation for a calmer, faster replacement for legacy school ERP/LMS workflows.
 
-## What is included
+Phase 1 converts the original clickable prototype into a production-oriented Next.js application backed by Supabase Auth, PostgreSQL, Row Level Security and private file storage.
 
-- Role-based login preview for Teacher, Administrator, and Parent
-- Teacher **Today** workspace organized around the school day
-- Fast attendance entry with present-by-default, exception marking, reasons, and offline-safe state messaging
-- Class diary authoring with reuse, multi-section publishing, parent preview, and digest delivery controls
-- Spreadsheet-style marks entry with autosave, validation, and moderation state
-- Global command search and responsive desktop/mobile navigation
-- Local persistence through `localStorage`
+## Phase 1 status
 
-The Teacher experience is the first deep vertical slice. Administrator and Parent shells establish the role-based information architecture for the next iteration.
+- Next.js App Router with strict TypeScript
+- Cookie-backed Supabase authentication
+- Protected routes using the Next.js 16 `proxy.ts` convention
+- Organization, campus and academic-year tenancy
+- Seven application roles with explicit database policies
+- Student, guardian, class and enrollment foundation entities
+- Row Level Security on every exposed application table
+- Explicit PostgreSQL grants for `anon` and `authenticated`
+- Private tenant-path file bucket with a 25 MB policy limit
+- Append-only audit-event table
+- Security headers and environment validation
+- Supabase migration, structural seed and pgTAP foundation tests
+- CI workflow for lint, type-check and production build
+- Original teacher workflow prototype preserved at `/prototype/index.html`
 
-## Run locally
+## Stack
 
-No build step or package installation is required.
+- Next.js 16
+- React 19
+- TypeScript
+- Supabase Auth
+- Supabase PostgreSQL and Storage
+- Zod environment validation
+
+## Local setup
+
+### 1. Install dependencies
 
 ```bash
-python3 -m http.server 4173
+npm install
 ```
 
-Then open [http://localhost:4173](http://localhost:4173).
+### 2. Configure environment
 
-## Demo login
+```bash
+cp .env.example .env.local
+```
 
-The form is prefilled. Choose a role and select **Sign in**. All data is fictional.
+Add the project URL and publishable key from Supabase project settings. Never expose the server secret with a `NEXT_PUBLIC_` prefix.
 
-## MVP principles
+### 3. Start the local database
 
-- Today before modules
-- Bulk before single-record entry
-- Autosave and visible system state
-- Keyboard and spreadsheet-friendly workflows
-- Recoverable work and explicit delivery status
-- One shared information model across roles
+Docker Desktop must be running.
 
-## Next build sequence
+```bash
+npx supabase start
+npx supabase db reset
+```
 
-1. Connect authentication and tenancy
-2. Add a persistence API and audit events
-3. Complete roster/timetable import
-4. Add parent child timeline and communication search
-5. Build administrator exception queues
-6. Add fee ledger/reconciliation and transport freshness
+Copy the local API URL and publishable key printed by Supabase into `.env.local`.
 
+### 4. Create the first owner
+
+Sign-up is deliberately disabled. Create or invite a user through Supabase Auth. Then add that user to the seeded organization:
+
+```sql
+insert into public.memberships (organization_id, campus_id, user_id, role)
+values (
+  '10000000-0000-0000-0000-000000000001',
+  '20000000-0000-0000-0000-000000000001',
+  '<AUTH_USER_UUID>',
+  'owner'
+);
+```
+
+### 5. Run the app
+
+```bash
+npm run dev
+```
+
+Open `http://localhost:3000`. The original UX MVP remains available at `http://localhost:3000/prototype/index.html`.
+
+## Quality checks
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npx supabase test db
+```
+
+## Production setup
+
+1. Create separate Supabase projects for staging and production.
+2. Apply migrations with `supabase db push` through CI or an approved release job.
+3. Configure the exact production URL in Supabase Auth redirect settings.
+4. Store environment variables in the deployment platform; never commit `.env.local`.
+5. Create the first owner through a controlled administration workflow.
+6. Verify RLS tests, backups, point-in-time recovery and audit access before onboarding a school.
+
+See [Architecture](docs/architecture.md), [Security](docs/security.md), and the [Environment runbook](docs/environment-runbook.md).
+
+## Repository structure
+
+```text
+app/                       Next.js routes and server actions
+components/                Shared product shell
+lib/auth/                  Role and tenant context
+lib/supabase/              Browser, server and proxy clients
+supabase/migrations/       Reproducible database changes
+supabase/tests/            RLS and grant tests
+public/prototype/           Original clickable teacher MVP
+docs/                      Architecture and operating guidance
+```
+
+## Next phase
+
+Phase 2 connects the Teacher Today, roster, timetable and attendance workflows to production data, including offline-safe submission, correction approval and parent exception notifications.
