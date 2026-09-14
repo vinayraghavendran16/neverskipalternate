@@ -1,10 +1,10 @@
 # Northstar School OS
 
-The production foundation for a calmer, faster replacement for legacy school ERP/LMS workflows.
+The production foundation and people directory for a calmer, faster replacement for legacy school ERP/LMS workflows.
 
 Phase 1 converts the original clickable prototype into a production-oriented Next.js application backed by Supabase Auth, PostgreSQL, Row Level Security and private file storage.
 
-## Phase 1 status
+## Phase 1 and 2 status
 
 - Next.js App Router with strict TypeScript
 - Cookie-backed Supabase authentication
@@ -20,6 +20,12 @@ Phase 1 converts the original clickable prototype into a production-oriented Nex
 - Supabase migration, structural seed and pgTAP foundation tests
 - CI workflow for lint, type-check and production build
 - Original teacher workflow prototype preserved at `/prototype/index.html`
+- Functional navigation with clear planned-module states
+- Searchable student, staff and guardian directories
+- Fast create and edit forms with role-aware controls
+- Guardian-to-student relationship and pickup authorization records
+- CSV student import with admission-number upserts
+- Privacy-aware people RLS and append-only mutation audit events
 
 ## Stack
 
@@ -114,4 +120,4 @@ docs/                      Architecture and operating guidance
 
 ## Next phase
 
-Phase 2 connects the Teacher Today, roster, timetable and attendance workflows to production data, including offline-safe submission, correction approval and parent exception notifications.
+Phase 3 connects academic structure, Teacher Today, roster, timetable and attendance workflows to production data, including offline-safe submission, correction approval and parent exception notifications.

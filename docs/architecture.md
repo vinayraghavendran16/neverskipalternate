@@ -1,4 +1,4 @@
-# Phase 1 architecture
+# Northstar architecture
 
 ## Decision
 
@@ -35,6 +35,16 @@ Phase 1 establishes:
 - Academics: classes and enrollment
 - Files: governed metadata and private objects
 - Governance: audit events
+
+Phase 2 extends People into operational directories:
+
+- Student records with school identifiers, contact and care details
+- Staff and teacher records that may be created before an Auth account exists
+- Guardian contacts that may be created before portal access is invited
+- Guardian-student relationships, primary-contact and pickup authorization flags
+- CSV student import with admission number as the tenant-scoped upsert key
+
+People mutations remain server actions backed by Zod validation, RLS and audit events. Records are archived through status changes instead of hard deletion.
 
 Attendance, teaching, assessment, communication, finance and transport will be added as migrations without splitting into services prematurely.
 

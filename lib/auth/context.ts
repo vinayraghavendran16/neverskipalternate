@@ -8,6 +8,7 @@ export type UserContext = {
   fullName: string;
   organizationId: string;
   organizationName: string;
+  campusId: string | null;
   campusName: string | null;
   role: AppRole;
 };
@@ -43,6 +44,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     fullName: profile?.full_name || user.email?.split("@")[0] || "User",
     organizationId: membership.organization_id,
     organizationName: organization?.name || "School",
+    campusId: membership.campus_id,
     campusName: campus?.name || null,
     role: membership.role as AppRole,
   };
@@ -50,4 +52,8 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
 
 export function canManageSchool(role: AppRole) {
   return role === "owner" || role === "administrator";
+}
+
+export function canManagePeople(role: AppRole) {
+  return role === "owner" || role === "administrator" || role === "principal" || role === "staff";
 }
