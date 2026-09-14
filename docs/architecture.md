@@ -60,6 +60,18 @@ Phase 3 makes Academics and Attendance operational:
 
 Teaching, assessment, communication, finance and transport will be added as migrations without splitting into services prematurely.
 
+Phase 4 adds the teacher execution layer:
+
+- Teacher Today composes assigned timetable periods and open work into one server-rendered view
+- Lesson diary entries are tied to class-subject allocations and optional timetable periods
+- Homework content is created once and mapped to multiple eligible classes
+- Assessments own a single active roster marks grid
+- Marks stay in browser-local state while typing and persist in one batch
+- Database triggers reject marks above the assessment maximum and students outside the active roster
+- Teacher policies resolve the authenticated staff profile against explicit subject allocation
+
+The performance decisions and pilot budgets are recorded in [Performance guardrails](performance.md).
+
 ## File model
 
 All object paths begin with the organization UUID:

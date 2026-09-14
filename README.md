@@ -1,10 +1,10 @@
 # Northstar School OS
 
-The production foundation, people directory, academic setup and daily attendance workflow for a calmer, faster replacement for legacy school ERP/LMS software.
+The production foundation, people directory, academics, attendance and teacher daily workspace for a calmer, faster replacement for legacy school ERP/LMS software.
 
 Phase 1 converts the original clickable prototype into a production-oriented Next.js application backed by Supabase Auth, PostgreSQL, Row Level Security and private file storage.
 
-## Phase 1–3 status
+## Phase 1–4 status
 
 - Next.js App Router with strict TypeScript
 - Cookie-backed Supabase authentication
@@ -33,6 +33,12 @@ Phase 1 converts the original clickable prototype into a production-oriented Nex
 - Present-by-default daily attendance with drafts and submission
 - Assigned-class enforcement for teacher attendance changes
 - Operational Command Centre with live people, class and attendance metrics
+- Teacher Today workspace with personal timetable and open-work indicators
+- Reusable class diary entries with draft, publish and previous-entry reuse
+- Homework creation across multiple subject-allocated classes
+- Assessment setup and spreadsheet-style keyboard marks entry
+- One-request batch persistence for attendance and complete class mark registers
+- Route loading states, bounded queries and documented performance budgets
 
 ## Stack
 
@@ -127,4 +133,4 @@ docs/                      Architecture and operating guidance
 
 ## Next phase
 
-Phase 4 adds teacher planning and assessment: Teacher Today, class diary, homework, marks, report-card foundations and an attendance-correction approval inbox. Offline-safe attendance queues and parent exception notifications remain production-hardening work before a live pilot.
+Phase 5 adds parent and student portals, communication delivery, homework visibility, attendance exception notifications and approval interfaces. Offline queues, campus-level policy hardening and production telemetry remain required before a live multi-school pilot.

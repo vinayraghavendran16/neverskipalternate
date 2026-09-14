@@ -108,6 +108,36 @@ export type Database = {
         Update: { status?: string; reviewed_by?: string | null; reviewed_at?: string | null };
         Relationships: [];
       };
+      lesson_diary_entries: {
+        Row: { id: string; organization_id: string; class_subject_id: string; timetable_entry_id: string | null; entry_date: string; topic: string; summary: string; learning_objective: string | null; status: string; created_by: string; published_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; class_subject_id: string; timetable_entry_id?: string | null; entry_date: string; topic: string; summary: string; learning_objective?: string | null; status?: string; created_by: string; published_at?: string | null };
+        Update: { topic?: string; summary?: string; learning_objective?: string | null; status?: string; published_at?: string | null };
+        Relationships: [];
+      };
+      homework_assignments: {
+        Row: { id: string; organization_id: string; subject_id: string; title: string; instructions: string; due_at: string; estimated_minutes: number | null; status: string; created_by: string; published_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; subject_id: string; title: string; instructions: string; due_at: string; estimated_minutes?: number | null; status?: string; created_by: string; published_at?: string | null };
+        Update: { title?: string; instructions?: string; due_at?: string; estimated_minutes?: number | null; status?: string; published_at?: string | null };
+        Relationships: [];
+      };
+      homework_classes: {
+        Row: { id: string; organization_id: string; homework_id: string; class_id: string; created_at: string };
+        Insert: { id?: string; organization_id: string; homework_id: string; class_id: string };
+        Update: { class_id?: string };
+        Relationships: [];
+      };
+      assessments: {
+        Row: { id: string; organization_id: string; class_subject_id: string; title: string; assessment_date: string; max_marks: number; weight_percent: number | null; status: string; created_by: string; published_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; class_subject_id: string; title: string; assessment_date: string; max_marks: number; weight_percent?: number | null; status?: string; created_by: string; published_at?: string | null };
+        Update: { title?: string; assessment_date?: string; max_marks?: number; weight_percent?: number | null; status?: string; published_at?: string | null };
+        Relationships: [];
+      };
+      assessment_marks: {
+        Row: { id: string; organization_id: string; assessment_id: string; student_id: string; marks: number | null; result_status: string; note: string | null; marked_by: string; marked_at: string } & Timestamped;
+        Insert: { id?: string; organization_id: string; assessment_id: string; student_id: string; marks?: number | null; result_status?: string; note?: string | null; marked_by: string; marked_at?: string };
+        Update: { marks?: number | null; result_status?: string; note?: string | null; marked_by?: string; marked_at?: string };
+        Relationships: [];
+      };
       audit_events: {
         Row: { id: number; organization_id: string; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; occurred_at: string };
         Insert: { organization_id: string; actor_user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json };

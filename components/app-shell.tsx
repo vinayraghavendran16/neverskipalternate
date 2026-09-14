@@ -4,7 +4,7 @@ import type { UserContext } from "@/lib/auth/context";
 import { logout } from "@/app/login/actions";
 
 const nav = [
-  ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"],
+  ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/teacher", "◈", "Teacher Today"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"], ["/dashboard/homework", "↗", "Homework"], ["/dashboard/assessments", "▤", "Assessments"],
   ["OPERATIONS"], ["/dashboard/approvals", "✓", "Approvals"], ["/dashboard/finance", "₹", "Finance"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/communication", "◇", "Communication"],
 ];
 

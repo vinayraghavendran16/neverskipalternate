@@ -28,6 +28,13 @@ const activityLabels: Record<string, string> = {
   "people.student_created": "Student added",
   "people.staff_created": "Staff member added",
   "people.guardian_created": "Guardian added",
+  "teaching.diary_published": "Class diary published",
+  "teaching.diary_saved": "Class diary draft saved",
+  "homework.published": "Homework published",
+  "homework.draft_created": "Homework draft saved",
+  "assessment.created": "Assessment created",
+  "assessment.marks_saved": "Assessment marks saved",
+  "assessment.marks_published": "Assessment marks published",
 };
 
 export default async function DashboardPage() {
