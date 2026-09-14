@@ -146,7 +146,11 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      save_attendance_register: { Args: { p_org: string; p_class: string; p_date: string; p_submit: boolean; p_rows: Json }; Returns: string };
+      save_marks_register: { Args: { p_assessment: string; p_publish: boolean; p_rows: Json }; Returns: number };
+      create_homework_with_classes: { Args: { p_org: string; p_subject: string; p_title: string; p_instructions: string; p_due: string; p_minutes: number | null; p_publish: boolean; p_classes: string[] }; Returns: string };
+    };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
   };

@@ -5,11 +5,12 @@ import { z } from "zod";
 import { getUserContext } from "@/lib/auth/context";
 import { writeAuditEvent } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
+import { databaseId } from "@/lib/validation";
 
 export type DiaryActionState = { error?: string; success?: string };
 const teachingRoles = ["owner", "administrator", "principal", "teacher", "staff"];
 const diarySchema = z.object({
-  class_subject_id: z.uuid(), timetable_entry_id: z.union([z.uuid(), z.literal("")]), entry_date: z.iso.date(),
+  class_subject_id: databaseId, timetable_entry_id: z.union([databaseId, z.literal("")]), entry_date: z.iso.date(),
   topic: z.string().trim().min(1).max(180), summary: z.string().trim().min(1).max(4000),
   learning_objective: z.string().trim().max(1000), intent: z.enum(["draft", "publish"]),
 });

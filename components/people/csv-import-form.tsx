@@ -13,8 +13,8 @@ export function CsvImportForm({ campusId }: { campusId: string }) {
       <div className="upload-icon">⇧</div>
       <div><b>Choose a student CSV</b><p>Maximum 500 rows or 1 MB per import.</p></div>
       <input name="file" type="file" accept=".csv,text/csv" required />
-      {state.error && <p className="form-error">{state.error}</p>}
-      {state.success && <p className="form-success">{state.success}</p>}
+      {state.error && <p className="form-error" role="alert">{state.error}</p>}
+      {state.success && <p className="form-success" role="status">{state.success}</p>}
       <button className="primary" type="submit" disabled={pending}><span>{pending ? "Importing…" : "Import students"}</span><span>→</span></button>
     </form>
   );

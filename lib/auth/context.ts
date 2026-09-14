@@ -25,6 +25,8 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     .select("organization_id, campus_id, role")
     .eq("user_id", user.id)
     .eq("status", "active")
+    .order("created_at")
+    .order("id")
     .limit(1)
     .maybeSingle();
 

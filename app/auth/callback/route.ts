@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { safeNextPath } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   if (code && supabase) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(new URL(next.startsWith("/") ? next : "/dashboard", request.url));
+    if (!error) return NextResponse.redirect(new URL(safeNextPath(next), request.url));
   }
 
   return NextResponse.redirect(new URL("/login?error=callback", request.url));

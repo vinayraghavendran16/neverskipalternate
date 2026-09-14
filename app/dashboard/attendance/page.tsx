@@ -18,6 +18,7 @@ export default async function AttendancePage() {
     supabase.from("class_enrollments").select("class_id").eq("organization_id", context.organizationId).eq("status", "active"),
     supabase.from("attendance_sessions").select("id, class_id, status, submitted_at").eq("organization_id", context.organizationId).eq("attendance_date", today),
   ]);
+  if ([classResult, enrollmentResult, sessionResult].some((result) => result.error)) throw new Error("School data could not be loaded. Please retry.");
   const classes = classResult.data || [], sessions = new Map((sessionResult.data || []).map((session) => [session.class_id, session]));
   const rosterCounts = new Map<string, number>(); for (const item of enrollmentResult.data || []) rosterCounts.set(item.class_id, (rosterCounts.get(item.class_id) || 0) + 1);
   const submitted = [...sessions.values()].filter((session) => session.status === "submitted" || session.status === "locked").length;

@@ -17,7 +17,8 @@ export default async function PersonDetailPage({ params, searchParams }: { param
   const supabase = await createClient();
   if (!supabase) redirect("/login");
   const table = kind === "students" ? "students" : kind === "staff" ? "staff_profiles" : "guardians";
-  const { data } = await supabase.from(table).select("*").eq("id", id).eq("organization_id", context.organizationId).maybeSingle();
+  const { data, error } = await supabase.from(table).select("*").eq("id", id).eq("organization_id", context.organizationId).maybeSingle();
+  if (error) throw new Error("This person’s record could not be loaded.");
   if (!data) notFound();
   const record = data as unknown as Record<string, string | null>;
   const { data: campuses } = await supabase.from("campuses").select("id, name").eq("organization_id", context.organizationId).order("name");
@@ -47,7 +48,7 @@ export default async function PersonDetailPage({ params, searchParams }: { param
       <div className={kind === "students" ? "profile-grid" : "profile-single"}>
         <section className="card form-card"><div className="card-header"><div><h2>{canEdit ? "Record details" : "Profile details"}</h2><p>{canEdit ? "Update a field without re-entering the rest." : "You have read-only access to this record."}</p></div></div>{canEdit ? <RecordForm kind={kind} record={record} campuses={campuses || []} /> : <div className="card-body read-only-grid">{Object.entries(record).filter(([key, value]) => value && !["id", "organization_id", "campus_id", "user_id", "created_at", "updated_at"].includes(key)).map(([key, value]) => <div key={key}><small>{key.replaceAll("_", " ")}</small><b>{value}</b></div>)}</div>}</section>
         {kind === "students" && <aside className="guardian-panel">
-          <section className="card"><div className="card-header"><div><h2>Family and pickup</h2><p>Contacts connected to this student.</p></div><Link className="text-link" href="/dashboard/people/guardians/new">New guardian</Link></div><div className="card-body relationship-list">{relationships.length ? relationships.map((relationship) => { const guardian = relationshipGuardians.get(relationship.guardian_id); return <div className="relationship-row" key={relationship.id}><div><b>{guardian?.name || "Guardian"}</b><small>{relationship.relationship} · {guardian?.phone || "No phone"}</small></div><span>{relationship.is_primary ? "Primary" : relationship.can_pick_up ? "Pickup" : "Contact"}</span></div>; }) : <p className="empty-copy">No guardians linked yet.</p>}</div></section>
+          <section className="card"><div className="card-header"><div><h2>Family and pickup</h2><p>Contacts connected to this student.</p></div>{canEdit && <Link className="text-link" href="/dashboard/people/guardians/new">New guardian</Link>}</div><div className="card-body relationship-list">{relationships.length ? relationships.map((relationship) => { const guardian = relationshipGuardians.get(relationship.guardian_id); return <div className="relationship-row" key={relationship.id}><div><b>{guardian?.name || "Guardian"}</b><small>{relationship.relationship} · {guardian?.phone || "No phone"}</small></div><span>{relationship.is_primary ? "Primary" : relationship.can_pick_up ? "Pickup" : "Contact"}</span></div>; }) : <p className="empty-copy">No guardians linked yet.</p>}</div></section>
           {canEdit && <section className="card"><div className="card-header"><div><h2>Link guardian</h2><p>Add family context without duplicate entry.</p></div></div><div className="card-body"><GuardianLinkForm studentId={id} guardians={guardianDirectory} /></div></section>}
         </aside>}
       </div>

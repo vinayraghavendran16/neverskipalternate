@@ -1,9 +1,11 @@
 "use server";
 
+import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getUserContext } from "@/lib/auth/context";
 import { writeAuditEvent } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
+import { databaseId } from "@/lib/validation";
 
 export type AttendanceActionState = { error?: string; success?: string; exceptions?: number };
 const attendanceRoles = ["owner", "administrator", "principal", "teacher", "staff"];
@@ -16,7 +18,7 @@ export async function saveAttendance(_: AttendanceActionState, formData: FormDat
   const classId = value(formData, "class_id");
   const attendanceDate = value(formData, "attendance_date");
   const submit = value(formData, "intent") === "submit";
-  if (!classId || !/^\d{4}-\d{2}-\d{2}$/.test(attendanceDate)) return { error: "Choose a class and valid attendance date." };
+  if (!databaseId.safeParse(classId).success || !z.iso.date().safeParse(attendanceDate).success) return { error: "Choose a class and valid attendance date." };
   const { data: classRecord } = await supabase.from("classes").select("id, campus_id, homeroom_teacher_user_id").eq("id", classId).eq("organization_id", context.organizationId).maybeSingle();
   if (!classRecord) return { error: "Class not found." };
 
@@ -28,23 +30,17 @@ export async function saveAttendance(_: AttendanceActionState, formData: FormDat
 
   const { data: enrollments } = await supabase.from("class_enrollments").select("student_id").eq("class_id", classId).eq("organization_id", context.organizationId).eq("status", "active");
   if (!enrollments?.length) return { error: "Add students to this class before taking attendance." };
-  const { data: session, error: sessionError } = await supabase.from("attendance_sessions").upsert({
-    organization_id: context.organizationId, campus_id: classRecord.campus_id, class_id: classId,
-    attendance_date: attendanceDate, status: submit ? "submitted" : "draft", marked_by: context.userId,
-    submitted_at: submit ? new Date().toISOString() : null,
-  }, { onConflict: "class_id,attendance_date" }).select("id").single();
-  if (sessionError) return { error: sessionError.message };
-
   const validStatuses = new Set(["present", "absent", "late", "excused"]);
   const records = enrollments.map(({ student_id }) => {
     const chosen = value(formData, `status_${student_id}`);
-    const status = validStatuses.has(chosen) ? chosen : "present";
-    return { organization_id: context.organizationId, session_id: session.id, student_id, status, reason: value(formData, `reason_${student_id}`) || null, marked_at: new Date().toISOString() };
+    const status = chosen;
+    return { student_id, status, reason: value(formData, `reason_${student_id}`) || null };
   });
-  const { error: recordError } = await supabase.from("attendance_records").upsert(records, { onConflict: "session_id,student_id" });
+  if (records.some((row) => !validStatuses.has(row.status) || (row.reason?.length || 0) > 500)) return { error: "The roster changed or a status is missing. Refresh before saving." };
+  const { data: sessionId, error: recordError } = await supabase.rpc("save_attendance_register", { p_org: context.organizationId, p_class: classId, p_date: attendanceDate, p_submit: submit, p_rows: records });
   if (recordError) return { error: recordError.message };
   const exceptions = records.filter((record) => record.status !== "present").length;
-  await writeAuditEvent({ organizationId: context.organizationId, action: submit ? "attendance.submitted" : "attendance.draft_saved", entityType: "attendance_session", entityId: session.id, metadata: { class_id: classId, attendance_date: attendanceDate, students: records.length, exceptions } });
+  await writeAuditEvent({ organizationId: context.organizationId, action: submit ? "attendance.submitted" : "attendance.draft_saved", entityType: "attendance_session", entityId: sessionId!, metadata: { class_id: classId, attendance_date: attendanceDate, students: records.length, exceptions } });
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/attendance");
   revalidatePath(`/dashboard/attendance/${classId}`);

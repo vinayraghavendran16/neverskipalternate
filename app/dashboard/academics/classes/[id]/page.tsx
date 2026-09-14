@@ -13,7 +13,8 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
   if (!context) redirect(`/login?next=/dashboard/academics/classes/${id}`);
   const supabase = await createClient();
   if (!supabase) redirect("/login");
-  const { data: classRecord } = await supabase.from("classes").select("*").eq("id", id).eq("organization_id", context.organizationId).maybeSingle();
+  const { data: classRecord, error: classError } = await supabase.from("classes").select("id, organization_id, campus_id, academic_year_id, grade, section").eq("id", id).eq("organization_id", context.organizationId).maybeSingle();
+  if (classError) throw new Error("Class details could not be loaded.");
   if (!classRecord) notFound();
   const canManage = ["owner", "administrator", "principal"].includes(context.role);
   const [studentsResult, enrollmentsResult, subjectsResult, staffResult, allocationsResult, timetableResult, yearResult] = await Promise.all([
@@ -25,6 +26,7 @@ export default async function ClassDetailPage({ params }: { params: Promise<{ id
     supabase.from("timetable_entries").select("id, class_subject_id, weekday, period_number, starts_at, ends_at, room").eq("class_id", id).eq("organization_id", context.organizationId).order("weekday").order("period_number"),
     supabase.from("academic_years").select("name").eq("id", classRecord.academic_year_id).maybeSingle(),
   ]);
+  if ([studentsResult, enrollmentsResult, subjectsResult, staffResult, allocationsResult, timetableResult, yearResult].some((result) => result.error)) throw new Error("Class setup could not be loaded.");
   const students = studentsResult.data || [], enrolledIds = new Set((enrollmentsResult.data || []).map((item) => item.student_id));
   const studentMap = new Map(students.map((student) => [student.id, student]));
   const subjectMap = new Map((subjectsResult.data || []).map((subject) => [subject.id, subject]));

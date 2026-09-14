@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(18);
+select plan(22);
 
 select extensions.has_table('public', 'lesson_diary_entries', 'lesson diary entries exist');
 select extensions.has_table('public', 'homework_assignments', 'homework assignments exist');
@@ -22,6 +22,10 @@ select extensions.ok(has_function_privilege('authenticated', 'private.can_teach_
 select extensions.ok(has_function_privilege('authenticated', 'private.can_manage_assessment(uuid,uuid)', 'execute'), 'assessment authorization helper is callable');
 select extensions.ok(exists(select 1 from pg_indexes where schemaname = 'public' and indexname = 'assessment_marks_assessment_idx'), 'marks batch lookup is indexed');
 select extensions.ok(exists(select 1 from pg_indexes where schemaname = 'public' and indexname = 'diary_org_date_idx'), 'daily diary lookup is indexed');
+select extensions.ok(has_function_privilege('authenticated', 'public.save_attendance_register(uuid,uuid,date,boolean,jsonb)', 'execute'), 'authenticated users can call atomic attendance save');
+select extensions.ok(not has_function_privilege('anon', 'public.save_attendance_register(uuid,uuid,date,boolean,jsonb)', 'execute'), 'anonymous users cannot call attendance save');
+select extensions.ok(has_function_privilege('authenticated', 'public.save_marks_register(uuid,boolean,jsonb)', 'execute'), 'authenticated users can call atomic marks save');
+select extensions.ok(not has_function_privilege('anon', 'public.save_marks_register(uuid,boolean,jsonb)', 'execute'), 'anonymous users cannot call marks save');
 
 select * from extensions.finish();
 rollback;

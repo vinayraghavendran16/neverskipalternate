@@ -18,6 +18,7 @@ export default async function AcademicsPage() {
     supabase.from("campuses").select("id, name").eq("organization_id", context.organizationId).order("name"),
     supabase.from("class_enrollments").select("class_id").eq("organization_id", context.organizationId).eq("status", "active"),
   ]);
+  if ([classResult, subjectResult, yearResult, campusResult, enrollmentResult].some((result) => result.error)) throw new Error("Academic setup could not be loaded.");
   const classes = classResult.data || [], subjects = subjectResult.data || [];
   const enrollmentCounts = new Map<string, number>();
   for (const enrollment of enrollmentResult.data || []) enrollmentCounts.set(enrollment.class_id, (enrollmentCounts.get(enrollment.class_id) || 0) + 1);

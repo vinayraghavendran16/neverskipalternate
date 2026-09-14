@@ -18,6 +18,7 @@ export default async function AssessmentsPage() {
     supabase.from("class_subjects").select("id, class_id, subject_id, teacher_staff_id").eq("organization_id", context.organizationId).limit(1000),
     supabase.from("assessments").select("id, class_subject_id, title, assessment_date, max_marks, status, created_by").eq("organization_id", context.organizationId).order("assessment_date", { ascending: false }).limit(100),
   ]);
+  if ([staffResult, classResult, subjectResult, allocationsResult, assessmentsResult].some((result) => result.error)) throw new Error("Assessments could not be loaded.");
   const manager = ["owner","administrator","principal","staff"].includes(context.role); const allocations = (allocationsResult.data || []).filter((item) => manager || item.teacher_staff_id === staffResult.data?.id);
   const allowed = new Set(allocations.map((item) => item.id)); const classMap = new Map((classResult.data || []).map((item) => [item.id,item])); const subjectMap = new Map((subjectResult.data || []).map((item) => [item.id,item])); const allocationMap = new Map(allocations.map((item) => [item.id,item]));
   const options = allocations.map((item) => ({ id: item.id, label: `${classMap.get(item.class_id)?.grade || "Class"} ${classMap.get(item.class_id)?.section || ""} · ${subjectMap.get(item.subject_id)?.name || "Subject"}` }));

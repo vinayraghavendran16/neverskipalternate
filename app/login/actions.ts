@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { safeNextPath } from "@/lib/auth/redirect";
 import { createClient } from "@/lib/supabase/server";
 
 export type LoginState = { error?: string };
@@ -16,7 +17,7 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: "We could not sign you in. Check your credentials or ask your school administrator." };
-  redirect(next.startsWith("/") ? next : "/dashboard");
+  redirect(safeNextPath(next));
 }
 
 export async function logout() {

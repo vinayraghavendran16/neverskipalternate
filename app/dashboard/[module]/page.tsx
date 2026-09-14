@@ -13,14 +13,14 @@ const modules = {
 
 export default async function PlannedModulePage({ params }: { params: Promise<{ module: string }> }) {
   const { module: key } = await params;
-  if (!(key in modules)) notFound();
+  if (!Object.hasOwn(modules, key)) notFound();
   const moduleConfig = modules[key as keyof typeof modules];
   const context = await getUserContext();
   if (!context) redirect(`/login?next=/dashboard/${key}`);
 
   return (
     <AppShell context={context} activePath={`/dashboard/${key}`} pageTitle={moduleConfig.title}>
-      <div className="planned-page"><span className="eyebrow">{moduleConfig.eyebrow}</span><h1>{moduleConfig.title} is mapped.</h1><p>{moduleConfig.description}</p><div className="planned-list">{moduleConfig.items.map((item, index) => <div key={item}><span>0{index + 1}</span><b>{item}</b><small>Ready for implementation</small></div>)}</div><Link className="secondary" href="/dashboard">Return to command center</Link></div>
+      <div className="planned-page"><span className="eyebrow">{moduleConfig.eyebrow}</span><h1>{moduleConfig.title} is not available yet.</h1><p>{moduleConfig.description}</p><div className="planned-list">{moduleConfig.items.map((item, index) => <div key={item}><span>0{index + 1}</span><b>{item}</b><small>Unavailable — planned</small></div>)}</div><Link className="secondary" href="/dashboard">Return to command center</Link></div>
     </AppShell>
   );
 }
