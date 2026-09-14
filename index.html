@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f6f7f2" />
+  <title>Northstar School OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <section id="login-view" class="login-view">
+    <div class="login-art">
+      <div class="brand brand-light">
+        <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span>Northstar</span>
+      </div>
+      <div class="login-copy">
+        <span class="eyebrow">THE SCHOOL DAY, SIMPLIFIED</span>
+        <h1>Less admin.<br />More teaching.</h1>
+        <p>A calm, fast workspace for every task that keeps a school moving.</p>
+      </div>
+      <div class="art-card">
+        <div class="art-card-top"><span>Today</span><span class="status-dot">All caught up</span></div>
+        <div class="mini-task"><b>08:30</b><span>Attendance · Grade 8A</span><em>Done</em></div>
+        <div class="mini-task"><b>10:15</b><span>Science · Grade 7B</span><em class="next">Next</em></div>
+        <div class="mini-task"><b>12:00</b><span>Review submissions</span><em>12</em></div>
+      </div>
+      <small>Northstar School OS · MVP Preview</small>
+    </div>
+
+    <div class="login-panel">
+      <form id="login-form" class="login-card">
+        <span class="mobile-logo brand"><span class="brand-mark"><i></i><i></i><i></i></span>Northstar</span>
+        <div>
+          <span class="eyebrow ink">WELCOME BACK</span>
+          <h2>Start your school day</h2>
+          <p>Use a demo role to explore the product.</p>
+        </div>
+        <label>Email address
+          <input id="email" type="email" value="ananya@northstar.edu" autocomplete="email" required />
+        </label>
+        <label>Password
+          <span class="password-wrap"><input id="password" type="password" value="demo1234" autocomplete="current-password" required /><button type="button" id="show-password">Show</button></span>
+        </label>
+        <div class="form-meta"><label class="checkbox"><input type="checkbox" checked /> Remember me</label><button type="button" class="link-button">Forgot password?</button></div>
+        <button class="primary-button" type="submit">Sign in <span>→</span></button>
+        <div class="divider"><span>or preview as</span></div>
+        <div class="role-buttons">
+          <button type="button" data-role="Teacher" class="role active">Teacher</button>
+          <button type="button" data-role="Administrator" class="role">Admin</button>
+          <button type="button" data-role="Parent" class="role">Parent</button>
+        </div>
+        <p class="privacy-note">Demo data only. No real student information is stored.</p>
+      </form>
+    </div>
+  </section>
+
+  <div id="app-view" class="app-view hidden">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark"><i></i><i></i><i></i></span><span>Northstar</span></div>
+      <nav id="main-nav" aria-label="Main navigation"></nav>
+      <div class="sidebar-bottom">
+        <button class="school-switcher"><span class="school-avatar">NS</span><span><b>Northstar Academy</b><small>Koramangala Campus</small></span><span>⌄</span></button>
+        <button id="logout" class="logout-button"><span>↪</span> Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main-shell">
+      <header class="topbar">
+        <div class="mobile-brand brand"><span class="brand-mark"><i></i><i></i><i></i></span>Northstar</div>
+        <div id="breadcrumb" class="breadcrumb">Workspace / Today</div>
+        <div class="top-actions">
+          <button class="icon-button" title="Search" id="search-button">⌕</button>
+          <button class="icon-button notification-button" title="Notifications">♢<i></i></button>
+          <button class="profile-button"><span class="avatar">AR</span><span><b>Ananya Rao</b><small id="profile-role">Science teacher</small></span><span>⌄</span></button>
+        </div>
+      </header>
+      <div id="content" class="content"></div>
+      <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation"></nav>
+    </main>
+  </div>
+
+  <dialog id="search-dialog" class="search-dialog">
+    <form method="dialog">
+      <div class="search-box"><span>⌕</span><input id="global-search" placeholder="Search students, classes, tasks…" autofocus /><button value="cancel">Esc</button></div>
+      <div id="search-results" class="search-results">
+        <span class="eyebrow ink">QUICK LINKS</span>
+        <button value="cancel" data-go="attendance"><span class="result-icon">✓</span><span>Take Grade 8A attendance<small>Attendance · Today</small></span><kbd>↵</kbd></button>
+        <button value="cancel" data-go="marks"><span class="result-icon">#</span><span>Enter Unit Test marks<small>Assessments · Grade 8A</small></span><kbd>↵</kbd></button>
+        <button value="cancel" data-go="diary"><span class="result-icon">✎</span><span>Publish class diary<small>Grade 7B · Science</small></span><kbd>↵</kbd></button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
