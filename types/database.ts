@@ -24,6 +24,12 @@ export type Database = {
         Update: { name?: string; code?: string; timezone?: string };
         Relationships: [];
       };
+      academic_years: {
+        Row: { id: string; organization_id: string; name: string; starts_on: string; ends_on: string; status: string } & Timestamped;
+        Insert: { id?: string; organization_id: string; name: string; starts_on: string; ends_on: string; status?: string };
+        Update: { name?: string; starts_on?: string; ends_on?: string; status?: string };
+        Relationships: [];
+      };
       memberships: {
         Row: { id: string; organization_id: string; campus_id: string | null; user_id: string; role: AppRole; status: string; organizations?: { name: string } | null; campuses?: { name: string } | null } & Timestamped;
         Insert: { id?: string; organization_id: string; campus_id?: string | null; user_id: string; role: AppRole; status?: string };
@@ -52,6 +58,54 @@ export type Database = {
         Row: { id: string; organization_id: string; student_id: string; guardian_id: string; guardian_user_id: string | null; relationship: string; is_primary: boolean; can_pick_up: boolean; created_at: string };
         Insert: { id?: string; organization_id: string; student_id: string; guardian_id: string; guardian_user_id?: string | null; relationship: string; is_primary?: boolean; can_pick_up?: boolean };
         Update: { relationship?: string; is_primary?: boolean; can_pick_up?: boolean };
+        Relationships: [];
+      };
+      classes: {
+        Row: { id: string; organization_id: string; campus_id: string; academic_year_id: string; grade: string; section: string; homeroom_teacher_user_id: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; campus_id: string; academic_year_id: string; grade: string; section: string; homeroom_teacher_user_id?: string | null };
+        Update: { grade?: string; section?: string; homeroom_teacher_user_id?: string | null };
+        Relationships: [];
+      };
+      class_enrollments: {
+        Row: { id: string; organization_id: string; class_id: string; student_id: string; status: string; joined_on: string; left_on: string | null; created_at: string };
+        Insert: { id?: string; organization_id: string; class_id: string; student_id: string; status?: string; joined_on?: string; left_on?: string | null };
+        Update: { status?: string; joined_on?: string; left_on?: string | null };
+        Relationships: [];
+      };
+      subjects: {
+        Row: { id: string; organization_id: string; name: string; code: string; status: string } & Timestamped;
+        Insert: { id?: string; organization_id: string; name: string; code: string; status?: string };
+        Update: { name?: string; code?: string; status?: string };
+        Relationships: [];
+      };
+      class_subjects: {
+        Row: { id: string; organization_id: string; class_id: string; subject_id: string; teacher_staff_id: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; class_id: string; subject_id: string; teacher_staff_id?: string | null };
+        Update: { teacher_staff_id?: string | null };
+        Relationships: [];
+      };
+      timetable_entries: {
+        Row: { id: string; organization_id: string; class_id: string; class_subject_id: string; weekday: number; period_number: number; starts_at: string; ends_at: string; room: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; class_id: string; class_subject_id: string; weekday: number; period_number: number; starts_at: string; ends_at: string; room?: string | null };
+        Update: { weekday?: number; period_number?: number; starts_at?: string; ends_at?: string; room?: string | null };
+        Relationships: [];
+      };
+      attendance_sessions: {
+        Row: { id: string; organization_id: string; campus_id: string; class_id: string; attendance_date: string; status: string; marked_by: string; submitted_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; campus_id: string; class_id: string; attendance_date: string; status?: string; marked_by: string; submitted_at?: string | null };
+        Update: { status?: string; marked_by?: string; submitted_at?: string | null };
+        Relationships: [];
+      };
+      attendance_records: {
+        Row: { id: string; organization_id: string; session_id: string; student_id: string; status: string; reason: string | null; marked_at: string };
+        Insert: { id?: string; organization_id: string; session_id: string; student_id: string; status: string; reason?: string | null; marked_at?: string };
+        Update: { status?: string; reason?: string | null; marked_at?: string };
+        Relationships: [];
+      };
+      attendance_corrections: {
+        Row: { id: string; organization_id: string; attendance_record_id: string; requested_by: string; requested_status: string; reason: string; status: string; reviewed_by: string | null; reviewed_at: string | null; created_at: string };
+        Insert: { id?: string; organization_id: string; attendance_record_id: string; requested_by: string; requested_status: string; reason: string; status?: string; reviewed_by?: string | null; reviewed_at?: string | null };
+        Update: { status?: string; reviewed_by?: string | null; reviewed_at?: string | null };
         Relationships: [];
       };
       audit_events: {

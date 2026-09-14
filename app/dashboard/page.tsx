@@ -1,32 +1,65 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { SetupDashboard } from "@/components/setup-dashboard";
 import { getUserContext } from "@/lib/auth/context";
 import { isSupabaseConfigured } from "@/lib/env";
+import { createClient } from "@/lib/supabase/server";
 
-const foundations = [
-  ["Tenant data model", "Schools, campuses and academic years"],
-  ["Authentication boundary", "Cookie-backed sessions with server verification"],
-  ["Role permissions", "Owner, admin, principal, teacher, parent, student and staff"],
-  ["Row-level security", "Organization isolation enforced inside PostgreSQL"],
-  ["File governance", "Private bucket, tenant paths and metadata records"],
-  ["Audit events", "Append-only security and operational event trail"],
-];
+function schoolDate() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+}
+
+function greeting() {
+  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false }).format(new Date()));
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+const activityLabels: Record<string, string> = {
+  "attendance.submitted": "Attendance submitted",
+  "attendance.draft_saved": "Attendance draft saved",
+  "academics.class_created": "Class created",
+  "academics.students_enrolled": "Class roster updated",
+  "academics.subject_created": "Subject created",
+  "academics.subject_allocated": "Subject allocated",
+  "academics.timetable_updated": "Timetable updated",
+  "people.student_created": "Student added",
+  "people.staff_created": "Staff member added",
+  "people.guardian_created": "Guardian added",
+};
 
 export default async function DashboardPage() {
   if (!isSupabaseConfigured()) return <SetupDashboard />;
   const context = await getUserContext();
   if (!context) redirect("/login");
+  const supabase = await createClient();
+  if (!supabase) redirect("/login");
+  const today = schoolDate();
+  const [studentsResult, staffResult, classesResult, sessionsResult, activityResult] = await Promise.all([
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active"),
+    supabase.from("staff_profiles").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active"),
+    supabase.from("classes").select("id, grade, section").eq("organization_id", context.organizationId).order("grade"),
+    supabase.from("attendance_sessions").select("id, class_id, status, submitted_at").eq("organization_id", context.organizationId).eq("attendance_date", today),
+    supabase.from("audit_events").select("id, action, occurred_at, metadata").eq("organization_id", context.organizationId).order("occurred_at", { ascending: false }).limit(6),
+  ]);
+  const classes = classesResult.data || [];
+  const sessions = new Map((sessionsResult.data || []).map((session) => [session.class_id, session]));
+  const completed = [...sessions.values()].filter((session) => session.status === "submitted" || session.status === "locked").length;
+  const dueClasses = classes.filter((classRecord) => !["submitted", "locked"].includes(sessions.get(classRecord.id)?.status || ""));
+  const completion = classes.length ? Math.round((completed / classes.length) * 100) : 0;
+  const firstName = context.fullName.split(/\s+/)[0] || context.fullName;
 
   return (
     <AppShell context={context}>
-      <div className="page-head"><div><span className="eyebrow">PRODUCTION FOUNDATION</span><h1>The school core is ready.</h1><p>Authenticated as {context.role} inside an isolated organization tenant.</p></div><span className="release">Release {process.env.NEXT_PUBLIC_RELEASE_SHA || "local"}</span></div>
-      <section className="metrics"><div className="metric"><span>Organization</span><strong>1</strong><small>Tenant active</small></div><div className="metric"><span>Campuses</span><strong>1</strong><small>Scoped access</small></div><div className="metric"><span>Security controls</span><strong>6</strong><small>Foundation enabled</small></div><div className="metric"><span>Audit state</span><strong>Live</strong><small>Append-only events</small></div></section>
-      <div className="grid">
-        <section className="card"><header className="card-header"><div><h2>Foundation readiness</h2><p>Production controls implemented in this phase</p></div><span className="status">READY</span></header><div className="card-body foundation-list">{foundations.map(([title, description]) => <div className="foundation-item" key={title}><span className="check">✓</span><span><b>{title}</b><small>{description}</small></span><span className="status">Built</span></div>)}</div></section>
-        <section className="card security-card"><header className="card-header"><div><h2>Security posture</h2><p>Defense in depth by default</p></div><span>✦</span></header><div className="card-body"><div className="security-row"><span><b>Database isolation</b><small>RLS on exposed tables</small></span><i className="security-dot" /></div><div className="security-row"><span><b>Least privilege</b><small>Explicit grants by role</small></span><i className="security-dot" /></div><div className="security-row"><span><b>Server sessions</b><small>Verified on protected requests</small></span><i className="security-dot" /></div><div className="security-row"><span><b>Secrets discipline</b><small>Server keys never reach clients</small></span><i className="security-dot" /></div></div></section>
+      <div className="page-head command-head"><div><span className="eyebrow">COMMAND CENTRE · {new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" }).format(new Date()).toUpperCase()}</span><h1>{greeting()}, {firstName}.</h1><p>Here is what needs attention across {context.organizationName} today.</p></div><span className="release">Release {process.env.NEXT_PUBLIC_RELEASE_SHA || "local"}</span></div>
+      <section className="metrics command-metrics"><Link className="metric" href="/dashboard/people?kind=student"><span>Active students</span><strong>{studentsResult.count || 0}</strong><small>Open student directory →</small></Link><Link className="metric" href="/dashboard/people?kind=staff"><span>Active staff</span><strong>{staffResult.count || 0}</strong><small>Open staff directory →</small></Link><Link className="metric" href="/dashboard/academics"><span>Classes</span><strong>{classes.length}</strong><small>Manage academics →</small></Link><Link className="metric" href="/dashboard/attendance"><span>Attendance today</span><strong>{completion}%</strong><small>{completed} of {classes.length} submitted →</small></Link></section>
+      <div className="command-grid">
+        <section className="card today-card"><header className="card-header"><div><h2>Today’s attention</h2><p>Daily work that is still open.</p></div><span className={`status ${dueClasses.length ? "status-warning" : ""}`}>{dueClasses.length ? `${dueClasses.length} due` : "All clear"}</span></header><div className="attention-list">{dueClasses.slice(0, 6).map((classRecord) => { const state = sessions.get(classRecord.id)?.status || "not_started"; return <Link href={`/dashboard/attendance/${classRecord.id}?date=${today}`} key={classRecord.id}><span className="attention-icon">◫</span><div><b>{classRecord.grade} · Section {classRecord.section}</b><small>Attendance {state.replace("_", " ")}</small></div><span>Mark now →</span></Link>; })}{!classes.length && <div className="attention-empty"><b>Set up your first class</b><small>Create the academic structure before starting daily attendance.</small><Link className="secondary" href="/dashboard/academics">Open academics</Link></div>}{classes.length > 0 && !dueClasses.length && <div className="attention-empty success-empty"><b>Attendance is complete</b><small>Every class has submitted today’s register.</small><Link className="secondary" href="/dashboard/attendance">Review registers</Link></div>}</div></section>
+        <aside className="command-side"><section className="card quick-card"><header className="card-header"><div><h2>Quick actions</h2><p>Start common school tasks.</p></div></header><div className="quick-actions"><Link href="/dashboard/people/student/new"><span>＋</span><div><b>Add student</b><small>Create a student record</small></div></Link><Link href="/dashboard/people/import"><span>⇧</span><div><b>Import students</b><small>Upload a CSV roster</small></div></Link><Link href="/dashboard/academics"><span>▦</span><div><b>Manage classes</b><small>Rosters and timetable</small></div></Link><Link href="/dashboard/attendance"><span>◫</span><div><b>Take attendance</b><small>Mark daily exceptions</small></div></Link></div></section></aside>
       </div>
-      <div className="prototype-link"><span><b>Product workflow prototype preserved</b><small>Review the teacher Today, attendance, diary and marks experience while the backend is connected.</small></span><a href="/prototype/index.html">Open prototype →</a></div>
+      <section className="card activity-card"><header className="card-header"><div><h2>Recent activity</h2><p>Latest audited changes in this school tenant.</p></div><span className="status">AUDITED</span></header><div className="activity-list">{(activityResult.data || []).map((event) => <div key={event.id}><span className="activity-dot" /><div><b>{activityLabels[event.action] || event.action.replaceAll(".", " ")}</b><small>{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(event.occurred_at))}</small></div></div>)}{!activityResult.data?.length && <p className="empty-copy">No recent activity is visible for this role yet.</p>}</div></section>
     </AppShell>
   );
 }

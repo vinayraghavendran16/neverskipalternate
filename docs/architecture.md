@@ -46,7 +46,19 @@ Phase 2 extends People into operational directories:
 
 People mutations remain server actions backed by Zod validation, RLS and audit events. Records are archived through status changes instead of hard deletion.
 
-Attendance, teaching, assessment, communication, finance and transport will be added as migrations without splitting into services prematurely.
+Phase 3 makes Academics and Attendance operational:
+
+- Academic-year classes and sections
+- Reusable subject catalogue and teacher allocations
+- Active class rosters backed by student enrollments
+- Weekly timetable periods with class/day/period collision protection
+- One daily attendance session per class with present-by-default student records
+- Draft, submitted and locked register states
+- Teacher writes restricted to homeroom or allocated classes at both server-action and RLS boundaries
+- Attendance correction records designed for a later approval inbox
+- Live Command Centre metrics and audited recent activity
+
+Teaching, assessment, communication, finance and transport will be added as migrations without splitting into services prematurely.
 
 ## File model
 
