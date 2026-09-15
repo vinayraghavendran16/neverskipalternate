@@ -5,7 +5,6 @@ import { getUserContext } from "@/lib/auth/context";
 
 const modules = {
   academics: { title: "Academics", eyebrow: "PHASE 3", description: "Classes, sections, subjects, timetables and enrollment workflows.", items: ["Class and section setup", "Subject allocation", "Teacher timetables", "Student enrollment"] },
-  transport: { title: "Transport", eyebrow: "PLANNED MODULE", description: "Routes, stops, vehicles, attendants and live exceptions.", items: ["Route planning", "Student allocation", "Vehicle roster", "Delay communication"] },
 } as const;
 
 export default async function PlannedModulePage({ params }: { params: Promise<{ module: string }> }) {

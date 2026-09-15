@@ -5,14 +5,14 @@ import { logout } from "@/app/login/actions";
 
 const nav = [
   ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/teacher", "◈", "Teacher Today"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"], ["/dashboard/homework", "↗", "Homework"], ["/dashboard/assessments", "▤", "Assessments"],
-  ["EXPERIENCE"], ["/dashboard/communication", "◇", "Communication"],
+  ["EXPERIENCE"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Communication"],
   ["OPERATIONS"], ["/dashboard/approvals", "✓", "Approvals"], ["/dashboard/finance", "₹", "Finance"], ["/dashboard/transport", "⌖", "Transport"],
 ];
 
 export function AppShell({ context, children, activePath = "/dashboard", pageTitle = "Command center" }: { context: UserContext; children: ReactNode; activePath?: string; pageTitle?: string }) {
   const family = context.role === "parent" || context.role === "student";
-  const visibleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/people", "◉", "My records"]] : nav;
-  const planned = new Set(["/dashboard/transport"]);
+  const visibleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/people", "◉", "My records"]] : nav;
+  const planned = new Set<string>();
   const initials = context.fullName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   return (
     <div className="shell">

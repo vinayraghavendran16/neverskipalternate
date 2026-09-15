@@ -26,3 +26,5 @@ export async function reviewLeaveRequest(formData: FormData) {
   await supabase.from("leave_requests").update({ status: decision, review_note: note || null, reviewed_by: context.userId, reviewed_at: new Date().toISOString() }).eq("id", id).eq("organization_id", context.organizationId).eq("status", "pending");
   revalidatePath("/dashboard/approvals");
 }
+
+export async function reviewAttendanceCorrection(formData:FormData){const context=await getUserContext(),supabase=await createClient();if(!context||!supabase||!["owner","administrator","principal","staff"].includes(context.role))return;const id=String(formData.get("correction_id")||""),decision=String(formData.get("decision")||"");if(!databaseId.safeParse(id).success||!["approved","rejected"].includes(decision))return;await supabase.rpc("review_attendance_correction",{p_id:id,p_decision:decision});revalidatePath("/dashboard/approvals");revalidatePath("/dashboard/attendance")}
