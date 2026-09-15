@@ -5,7 +5,7 @@ import { canManagePeople, getUserContext } from "@/lib/auth/context";
 import { createClient } from "@/lib/supabase/server";
 
 type Tab = "students" | "staff" | "guardians";
-type SearchParams = Promise<{ tab?: string; q?: string; status?: string }>;
+type SearchParams = Promise<{ tab?: string; q?: string; status?: string; page?: string }>;
 
 function nameOf(record: { first_name: string; last_name: string | null }) {
   return [record.first_name, record.last_name].filter(Boolean).join(" ");
@@ -21,24 +21,25 @@ export default async function PeoplePage({ searchParams }: { searchParams: Searc
   const query = (params.q || "").trim().toLowerCase();
   const status = params.status || "all";
 
-  const [studentResult, staffResult, guardianResult] = await Promise.all([
-    supabase.from("students").select("id, admission_number, first_name, last_name, preferred_name, email, phone, status, campus_id").eq("organization_id", context.organizationId).order("first_name").limit(500),
-    supabase.from("staff_profiles").select("id, employee_number, first_name, last_name, email, phone, designation, department, status, campus_id").eq("organization_id", context.organizationId).order("first_name").limit(500),
-    supabase.from("guardians").select("id, first_name, last_name, email, phone, occupation, status").eq("organization_id", context.organizationId).order("first_name").limit(500),
+  const page = Math.max(1, Math.min(10000, Number.parseInt(params.page || "1", 10) || 1));
+  const pageSize = 50;
+  const table = tab === "staff" ? "staff_profiles" : tab;
+  let directoryQuery = supabase.from(table).select("*", { count: "exact" }).eq("organization_id", context.organizationId);
+  // Quote the PostgREST value and strip its escape/wildcard characters.
+  const search = query.slice(0, 160).replace(/["\\%_]/g, "");
+  const searchColumns = ["first_name", "last_name", "email", "phone", ...(tab === "students" ? ["admission_number", "preferred_name"] : tab === "staff" ? ["employee_number", "designation", "department"] : [])];
+  if (search) directoryQuery = directoryQuery.or(searchColumns.map((column) => `${column}.ilike."%${search}%"`).join(","));
+  if (status !== "all") directoryQuery = directoryQuery.eq("status", status);
+  const [directory, studentResult, staffResult, guardianResult] = await Promise.all([
+    directoryQuery.order("first_name").order("id").range((page - 1) * pageSize, page * pageSize - 1),
+    supabase.from("students").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId),
+    supabase.from("staff_profiles").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId),
+    supabase.from("guardians").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId),
   ]);
-
-  const students = studentResult.data || [];
-  const staff = staffResult.data || [];
-  const guardians = guardianResult.data || [];
-  const source = tab === "students" ? students : tab === "staff" ? staff : guardians;
-  const filtered = source.filter((record) => {
-    const searchable = Object.values(record).filter((entry) => typeof entry === "string").join(" ").toLowerCase();
-    return (!query || searchable.includes(query)) && (status === "all" || record.status === status);
-  });
-  const canManage = canManagePeople(context.role);
-  const activeStudents = students.filter((student) => student.status === "active").length;
-  const activeStaff = staff.filter((person) => person.status === "active").length;
-  const activeGuardians = guardians.filter((guardian) => guardian.status === "active").length;
+  if ([directory, studentResult, staffResult, guardianResult].some((result) => result.error)) throw new Error("The people directory could not be loaded.");
+  const filtered = directory.data || [];
+  const canManage = canManagePeople(context.role) && !(tab === "staff" && context.role === "staff");
+  const pageLink = (target: number) => `/dashboard/people?${new URLSearchParams({ tab, q: query, status, page: String(target) })}`;
   const labels = { students: "Student", staff: "Staff", guardians: "Guardian" };
 
   return (
@@ -49,9 +50,9 @@ export default async function PeoplePage({ searchParams }: { searchParams: Searc
       </div>
 
       <section className="people-metrics">
-        <Link href="/dashboard/people?tab=students"><span>Students</span><strong>{students.length}</strong><small>{activeStudents} active</small></Link>
-        <Link href="/dashboard/people?tab=staff"><span>Staff</span><strong>{staff.length}</strong><small>{activeStaff} active</small></Link>
-        <Link href="/dashboard/people?tab=guardians"><span>Guardians</span><strong>{guardians.length}</strong><small>{activeGuardians} active</small></Link>
+        <Link href="/dashboard/people?tab=students"><span>Students</span><strong>{studentResult.count || 0}</strong><small>Visible student records</small></Link>
+        <Link href="/dashboard/people?tab=staff"><span>Staff</span><strong>{staffResult.count || 0}</strong><small>Visible staff records</small></Link>
+        <Link href="/dashboard/people?tab=guardians"><span>Guardians</span><strong>{guardianResult.count || 0}</strong><small>Visible guardian records</small></Link>
         <div><span>Data scope</span><strong>{context.campusName ? "1" : "All"}</strong><small>{context.campusName || "All campuses"}</small></div>
       </section>
 
@@ -69,7 +70,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Searc
         </div>
 
         {filtered.length ? <div className="table-wrap"><table className="people-table">
-          <thead><tr><th>Name</th><th>{tab === "students" ? "Admission no." : tab === "staff" ? "Employee no." : "Phone"}</th><th>{tab === "staff" ? "Role" : "Contact"}</th><th>Status</th><th /></tr></thead>
+          <thead><tr><th>Name</th><th>{tab === "students" ? "Admission no." : tab === "staff" ? "Employee no." : "Phone"}</th><th>{tab === "staff" ? "Role" : "Contact"}</th><th>Status</th><th><span className="sr-only">Actions</span></th></tr></thead>
           <tbody>{filtered.map((record) => {
             const personName = nameOf(record);
             const idValue = tab === "students" && "admission_number" in record ? record.admission_number : tab === "staff" && "employee_number" in record ? record.employee_number : "phone" in record ? record.phone : "";
@@ -81,6 +82,7 @@ export default async function PeoplePage({ searchParams }: { searchParams: Searc
             </tr>;
           })}</tbody>
         </table></div> : <div className="empty-state"><span>◎</span><h2>{query || status !== "all" ? "No matching records" : `No ${tab} yet`}</h2><p>{query || status !== "all" ? "Try a broader search or clear the status filter." : `Add the first ${labels[tab].toLowerCase()} record to start the directory.`}</p>{canManage && !query && status === "all" && <Link className="primary compact" href={`/dashboard/people/${tab}/new`}>Add {labels[tab].toLowerCase()} →</Link>}</div>}
+        <nav className="card-body head-actions" aria-label="Directory pages">{page > 1 && <Link className="secondary" href={pageLink(page - 1)}>Previous</Link>}<span>Page {page} · {directory.count || 0} matching records</span>{page * pageSize < (directory.count || 0) && <Link className="secondary" href={pageLink(page + 1)}>Next</Link>}<Link className="secondary" href={`/dashboard/people?tab=${tab}`}>Clear filters</Link></nav>
       </section>
     </AppShell>
   );

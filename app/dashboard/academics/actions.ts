@@ -6,6 +6,7 @@ import { z } from "zod";
 import { getUserContext } from "@/lib/auth/context";
 import { writeAuditEvent } from "@/lib/audit";
 import { createClient } from "@/lib/supabase/server";
+import { databaseId } from "@/lib/validation";
 
 export type AcademicActionState = { error?: string; success?: string };
 
@@ -18,7 +19,7 @@ async function academicManager() {
   return { context, supabase };
 }
 
-const classSchema = z.object({ grade: z.string().trim().min(1).max(40), section: z.string().trim().min(1).max(40), academic_year_id: z.uuid(), campus_id: z.uuid() });
+const classSchema = z.object({ grade: z.string().trim().min(1).max(40), section: z.string().trim().min(1).max(40), academic_year_id: databaseId, campus_id: databaseId });
 const subjectSchema = z.object({ name: z.string().trim().min(1).max(120), code: z.string().trim().min(1).max(24).transform((entry) => entry.toUpperCase()) });
 
 export async function createClass(_: AcademicActionState, formData: FormData): Promise<AcademicActionState> {
@@ -26,7 +27,14 @@ export async function createClass(_: AcademicActionState, formData: FormData): P
   if (!access) return { error: "Only owners, administrators and principals can create classes." };
   const { context, supabase } = access;
   const parsed = classSchema.safeParse({ grade: value(formData, "grade"), section: value(formData, "section"), academic_year_id: value(formData, "academic_year_id"), campus_id: value(formData, "campus_id") || context.campusId });
-  if (!parsed.success) return { error: "Choose an academic year and complete the grade and section." };
+  if (!parsed.success) {
+    const field = parsed.error.issues[0]?.path[0];
+    const messages: Record<string, string> = {
+      academic_year_id: "Choose an academic year.", campus_id: "Choose a campus.",
+      grade: "Enter a grade, such as Grade 6.", section: "Enter a section, such as A.",
+    };
+    return { error: messages[String(field)] || "Check the class details and try again." };
+  }
   const { data, error } = await supabase.from("classes").insert({ ...parsed.data, organization_id: context.organizationId }).select("id").single();
   if (error) return { error: error.code === "23505" ? "That grade and section already exist for this academic year." : error.message };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.class_created", entityType: "class", entityId: data.id, metadata: parsed.data });

@@ -24,20 +24,15 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
   const protectedRoute = request.nextUrl.pathname.startsWith("/dashboard");
-  const authRoute = request.nextUrl.pathname.startsWith("/login");
 
   if (!user && protectedRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
-    return NextResponse.redirect(url);
-  }
-
-  if (user && authRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
     url.search = "";
-    return NextResponse.redirect(url);
+    url.searchParams.set("next", request.nextUrl.pathname + request.nextUrl.search);
+    const redirected = NextResponse.redirect(url);
+    response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));
+    return redirected;
   }
 
   return response;

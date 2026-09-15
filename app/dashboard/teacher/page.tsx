@@ -23,6 +23,7 @@ export default async function TeacherTodayPage() {
     supabase.from("homework_assignments").select("id, title, due_at, status, created_by").eq("organization_id", context.organizationId).gte("due_at", new Date().toISOString()).order("due_at").limit(20),
     supabase.from("assessments").select("id, title, assessment_date, status, class_subject_id, created_by").eq("organization_id", context.organizationId).in("status", ["draft", "marks_open"]).order("assessment_date").limit(30),
   ]);
+  if ([staffResult, classResult, subjectResult, allocationsResult, timetableResult, diaryResult, attendanceResult, homeworkResult, assessmentResult].some((result) => result.error)) throw new Error("School data could not be loaded. Please retry.");
   const manager = ["owner","administrator","principal","staff"].includes(context.role);
   const allocations = (allocationsResult.data || []).filter((item) => manager || item.teacher_staff_id === staffResult.data?.id);
   const allocationIds = new Set(allocations.map((item) => item.id));

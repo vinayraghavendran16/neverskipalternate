@@ -103,8 +103,15 @@ Open `http://localhost:3000`. The original UX MVP remains available at `http://l
 ```bash
 npm run lint
 npm run typecheck
+npm test
 npm run build
 npx supabase test db
+```
+
+The extended database transaction and authorization regression suite runs only against an empty disposable PostgreSQL database:
+
+```bash
+AUDIT_DATABASE_URL=postgresql://... CONFIRM_DISPOSABLE_DATABASE=yes npm run test:db:isolated
 ```
 
 ## Production setup

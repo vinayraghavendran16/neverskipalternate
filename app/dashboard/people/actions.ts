@@ -12,7 +12,7 @@ export type PeopleActionState = { error?: string; success?: string; imported?: n
 const optionalText = z.string().trim().max(500).transform((value) => value || null);
 const requiredText = z.string().trim().min(1, "Complete all required fields.").max(160);
 const email = z.string().trim().max(254).refine((value) => !value || z.email().safeParse(value).success, "Enter a valid email.").transform((value) => value || null);
-const date = z.string().trim().refine((value) => !value || /^\d{4}-\d{2}-\d{2}$/.test(value), "Enter a valid date.").transform((value) => value || null);
+const date = z.string().trim().refine((value) => !value || z.iso.date().safeParse(value).success, "Enter a valid date.").transform((value) => value || null);
 
 async function manager() {
   const context = await getUserContext();
@@ -28,7 +28,7 @@ function value(formData: FormData, key: string) {
 
 const studentSchema = z.object({
   admission_number: requiredText,
-  first_name: requiredText,
+  first_name: requiredText.max(100),
   last_name: optionalText,
   preferred_name: optionalText,
   date_of_birth: date,
@@ -43,7 +43,7 @@ const studentSchema = z.object({
 
 const staffSchema = z.object({
   employee_number: requiredText,
-  first_name: requiredText,
+  first_name: requiredText.max(100),
   last_name: optionalText,
   email,
   phone: optionalText,
@@ -55,7 +55,7 @@ const staffSchema = z.object({
 });
 
 const guardianSchema = z.object({
-  first_name: requiredText,
+  first_name: requiredText.max(100),
   last_name: optionalText,
   email,
   phone: requiredText,

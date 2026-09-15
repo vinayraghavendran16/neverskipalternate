@@ -19,7 +19,7 @@ export function LoginForm({ configured, next }: { configured: boolean; next: str
       {state.error && <p className="form-error" role="alert">{state.error}</p>}
       <input type="hidden" name="next" value={next} />
       <label className="field">School email<input name="email" type="email" autoComplete="email" placeholder="name@school.edu" required /></label>
-      <label className="field">Password<input name="password" type="password" autoComplete="current-password" minLength={8} required /></label>
+      <label className="field">Password<input name="password" type="password" autoComplete="current-password" required /></label>
       <button className="primary" type="submit" disabled={pending || !configured}><span>{pending ? "Signing in…" : "Sign in"}</span><span>→</span></button>
       <p style={{ fontSize: 11, textAlign: "center" }}>Invite-only access · Contact your school administrator for help.</p>
     </form>

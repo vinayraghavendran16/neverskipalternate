@@ -95,7 +95,7 @@ function renderToday() {
           </div>
         </section>
         <section class="card">
-          <div class="card-header"><div><h2>School updates</h2><p>Important notices only</p></div><button class="link-button">View all</button></div>
+          <div class="card-header"><div><h2>School updates</h2><p>Important notices only</p></div><button class="link-button" disabled title="Unavailable in this preview">Full feed unavailable</button></div>
           <div class="card-body notice-list">
             <div class="notice"><span class="notice-icon">!</span><div><b>Fire drill tomorrow</b><span>Assembly point updated</span></div><time>1h</time></div>
             <div class="notice"><span class="notice-icon">⌁</span><div><b>Staff meeting moved</b><span>Tuesday · 4:00 PM</span></div><time>3h</time></div>
@@ -116,8 +116,8 @@ function focusTask(title, meta, action, view) {
 function renderAttendance() {
   students.forEach((student, idx) => { if (!state.attendance[student[1]]) state.attendance[student[1]] = idx === 4 ? 'absent' : idx === 7 ? 'late' : 'present'; });
   const counts = Object.values(state.attendance).reduce((acc, status) => ({...acc, [status]: (acc[status] || 0) + 1}), {});
-  return `${pageHead('ATTENDANCE', 'Grade 8A', 'Monday · Period 1 · Science', `<button class="ghost-button" id="attendance-history">View history</button>`)}
-    <div class="toolbar"><div class="segmented"><button class="active">Today</button><button>Week</button><button>Month</button></div><div class="toolbar-group"><span class="date-chip">${counts.present || 0} present</span><span class="date-chip">${counts.absent || 0} absent</span><span class="date-chip">${counts.late || 0} late</span></div></div>
+  return `${pageHead('ATTENDANCE', 'Grade 8A', 'Monday · Period 1 · Science', `<button class="ghost-button" disabled title="Unavailable in this preview">History unavailable</button>`)}
+    <div class="toolbar"><div class="segmented"><button class="active">Today</button><button disabled title="Unavailable in this preview">Week unavailable</button><button disabled title="Unavailable in this preview">Month unavailable</button></div><div class="toolbar-group"><span class="date-chip">${counts.present || 0} present</span><span class="date-chip">${counts.absent || 0} absent</span><span class="date-chip">${counts.late || 0} late</span></div></div>
     <div class="status-banner"><span>● Draft saved on this device · Safe to continue offline</span><b>${students.length} students</b></div>
     <section class="card table-card">
       <table class="data-table"><thead><tr><th>STUDENT</th><th>STATUS</th><th>REASON / NOTE</th><th>LAST 30 DAYS</th></tr></thead><tbody>
@@ -130,8 +130,8 @@ function renderAttendance() {
 function attendanceRow(student, idx) {
   const status = state.attendance[student[1]] || 'present';
   return `<tr><td><div class="student"><span class="student-avatar">${student[2]}</span><span><b>${student[0]}</b><small>${student[1]}</small></span></div></td>
-    <td><div class="attendance-choice" data-id="${student[1]}"><button title="Present" data-status="present" class="${status === 'present' ? 'active' : ''}">P</button><button title="Absent" data-status="absent" class="${status === 'absent' ? 'active' : ''}">A</button><button title="Late" data-status="late" class="${status === 'late' ? 'active' : ''}">L</button></div></td>
-    <td><select class="reason-select" ${status === 'present' ? 'disabled' : ''}><option>${status === 'late' ? 'Bus delay' : status === 'absent' ? 'Unwell' : 'Select reason'}</option><option>Unwell</option><option>Approved leave</option><option>Bus delay</option><option>Other</option></select></td>
+    <td><div class="attendance-choice" data-id="${student[1]}"><button aria-label="Mark ${student[0]} present" title="Present" data-status="present" class="${status === 'present' ? 'active' : ''}">P</button><button aria-label="Mark ${student[0]} absent" title="Absent" data-status="absent" class="${status === 'absent' ? 'active' : ''}">A</button><button aria-label="Mark ${student[0]} late" title="Late" data-status="late" class="${status === 'late' ? 'active' : ''}">L</button></div></td>
+    <td><select aria-label="Attendance reason for ${student[0]}" class="reason-select" ${status === 'present' ? 'disabled' : ''}><option>${status === 'late' ? 'Bus delay' : status === 'absent' ? 'Unwell' : 'Select reason'}</option><option>Unwell</option><option>Approved leave</option><option>Bus delay</option><option>Other</option></select></td>
     <td><span class="grade-pill">${idx % 4 === 0 ? '94%' : idx % 3 === 0 ? '97%' : '100%'}</span></td></tr>`;
 }
 
@@ -156,7 +156,7 @@ function renderDiary() {
       </section>
       <div class="grid">
         <section class="card"><div class="card-header"><div><h2>Parent preview</h2><p>Exactly what families will see</p></div><span>◉</span></div><div class="card-body">
-          <span class="eyebrow ink">SCIENCE · TODAY</span><h3 style="margin:12px 0 8px;font:700 20px Manrope">Forces and motion</h3><p id="diary-preview" style="color:var(--muted);font-size:12px;line-height:1.6">${draft}</p><div class="notice" style="margin-top:16px"><span class="notice-icon">✓</span><div><b>Homework</b><span>Questions 1–5 · Due Wednesday</span></div></div>
+          <span class="eyebrow ink">SCIENCE · TODAY</span><h3 style="margin:12px 0 8px;font-size:20px">Forces and motion</h3><p id="diary-preview" style="color:var(--muted);font-size:12px;line-height:1.6">${draft}</p><div class="notice" style="margin-top:16px"><span class="notice-icon">✓</span><div><b>Homework</b><span>Questions 1–5 · Due Wednesday</span></div></div>
         </div></section>
         <section class="card"><div class="card-body"><span class="eyebrow ink">DELIVERY</span><div style="display:grid;gap:11px;margin-top:14px"><div class="option-row"><span><b>41 guardians</b><small>Across 39 households</small></span><span class="grade-pill">Ready</span></div><div class="option-row"><span><b>Daily digest</b><small>Scheduled for 5:30 PM</small></span><span class="grade-pill">Routine</span></div></div></div></section>
       </div>
@@ -166,9 +166,9 @@ function renderDiary() {
 
 function renderMarks() {
   const total = 30;
-  return `${pageHead('MARKS & RESULTS', 'Unit Test 1', 'Grade 8A · Science · Maximum 30 marks', `<button class="ghost-button" id="paste-marks">Paste from spreadsheet</button>`)}
-    <div class="toolbar"><div class="toolbar-group"><select style="width:190px"><option>Unit Test 1 · Science</option><option>Lab assessment 1</option></select><span class="date-chip">12 of 40 entered</span></div><div class="segmented"><button class="active">Entry</button><button>Review</button><button>Insights</button></div></div>
-    <div class="status-banner warning"><span>◆ 2 values need review before submission. Marks save as you type.</span><button class="link-button">Show issues</button></div>
+  return `${pageHead('MARKS & RESULTS', 'Unit Test 1', 'Grade 8A · Science · Maximum 30 marks', `<button class="ghost-button" disabled title="Unavailable in this preview">Spreadsheet paste unavailable</button>`)}
+    <div class="toolbar"><div class="toolbar-group"><select aria-label="Assessment"><option>Unit Test 1 · Science</option><option>Lab assessment 1</option></select><span class="date-chip">12 of 40 entered</span></div><div class="segmented"><button class="active">Entry</button><button disabled title="Unavailable in this preview">Review unavailable</button><button disabled title="Unavailable in this preview">Insights unavailable</button></div></div>
+    <div class="status-banner warning"><span>◆ 2 values need review before submission. Marks save as you type.</span><button class="link-button" disabled title="Unavailable in this preview">Issue filter unavailable</button></div>
     <section class="card table-card"><table class="data-table"><thead><tr><th>STUDENT</th><th>THEORY / 20</th><th>PRACTICAL / 10</th><th>TOTAL / 30</th><th>GRADE</th><th>STATUS</th></tr></thead><tbody>
       ${students.map((student, idx) => marksRow(student, idx, total)).join('')}
     </tbody></table></section>
@@ -181,7 +181,7 @@ function marksRow(student, idx, total) {
   const sum = theory !== '' && practical !== '' ? Number(theory) + Number(practical) : '—';
   const invalid = Number(theory) > 20 || Number(practical) > 10;
   const grade = sum === '—' ? '—' : sum >= 27 ? 'A+' : sum >= 24 ? 'A' : sum >= 20 ? 'B' : 'C';
-  return `<tr><td><div class="student"><span class="student-avatar">${student[2]}</span><span><b>${student[0]}</b><small>${student[1]}</small></span></div></td><td><input class="mark-input ${invalid ? 'invalid' : ''}" data-id="${student[1]}" data-part="theory" type="number" min="0" max="20" value="${theory}" /></td><td><input class="mark-input ${invalid ? 'invalid' : ''}" data-id="${student[1]}" data-part="practical" type="number" min="0" max="10" value="${practical}" /></td><td><b class="mark-total">${sum} / ${total}</b></td><td><span class="grade-pill">${grade}</span></td><td>${invalid ? '<span style="color:var(--red);font-size:10px">Check value</span>' : '<span style="color:var(--green-2);font-size:10px">Saved</span>'}</td></tr>`;
+  return `<tr><td><div class="student"><span class="student-avatar">${student[2]}</span><span><b>${student[0]}</b><small>${student[1]}</small></span></div></td><td><input aria-label="Theory marks for ${student[0]}" class="mark-input ${invalid ? 'invalid' : ''}" data-id="${student[1]}" data-part="theory" type="number" min="0" max="20" value="${theory}" /></td><td><input aria-label="Practical marks for ${student[0]}" class="mark-input ${invalid ? 'invalid' : ''}" data-id="${student[1]}" data-part="practical" type="number" min="0" max="10" value="${practical}" /></td><td><b class="mark-total">${sum} / ${total}</b></td><td><span class="grade-pill">${grade}</span></td><td>${invalid ? '<span style="color:var(--red);font-size:10px">Check value</span>' : '<span style="color:var(--green-2);font-size:10px">Saved</span>'}</td></tr>`;
 }
 
 function renderRolePreview() {
@@ -268,4 +268,3 @@ document.querySelectorAll('[data-go]').forEach(button => button.addEventListener
 document.addEventListener('keydown', event => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); document.querySelector('#search-dialog').showModal(); }
 });
-
