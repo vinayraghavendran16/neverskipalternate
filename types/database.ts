@@ -174,6 +174,42 @@ export type Database = {
         Update: never;
         Relationships: [];
       };
+      school_events: {
+        Row: { id:string; organization_id:string; campus_id:string|null; title:string; description:string|null; category:string; starts_at:string; ends_at:string; audience:AppRole[]; status:string; created_by:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; campus_id?:string|null; title:string; description?:string|null; category:string; starts_at:string; ends_at:string; audience:AppRole[]; status?:string; created_by:string };
+        Update: { campus_id?:string|null; title?:string; description?:string|null; category?:string; starts_at?:string; ends_at?:string; audience?:AppRole[]; status?:string };
+        Relationships: [];
+      };
+      transport_vehicles: {
+        Row: { id:string; organization_id:string; campus_id:string; registration_number:string; label:string; capacity:number; driver_name:string|null; driver_phone:string|null; status:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; campus_id:string; registration_number:string; label:string; capacity:number; driver_name?:string|null; driver_phone?:string|null; status?:string };
+        Update: { registration_number?:string; label?:string; capacity?:number; driver_name?:string|null; driver_phone?:string|null; status?:string };
+        Relationships: [];
+      };
+      transport_routes: {
+        Row: { id:string; organization_id:string; campus_id:string; vehicle_id:string|null; name:string; code:string; morning_departure:string|null; afternoon_departure:string|null; status:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; campus_id:string; vehicle_id?:string|null; name:string; code:string; morning_departure?:string|null; afternoon_departure?:string|null; status?:string };
+        Update: { vehicle_id?:string|null; name?:string; code?:string; morning_departure?:string|null; afternoon_departure?:string|null; status?:string };
+        Relationships: [];
+      };
+      transport_stops: {
+        Row: { id:string; organization_id:string; route_id:string; name:string; stop_order:number; pickup_time:string|null; drop_time:string|null } & Timestamped;
+        Insert: { id?:string; organization_id:string; route_id:string; name:string; stop_order:number; pickup_time?:string|null; drop_time?:string|null };
+        Update: { name?:string; stop_order?:number; pickup_time?:string|null; drop_time?:string|null };
+        Relationships: [];
+      };
+      transport_assignments: {
+        Row: { id:string; organization_id:string; student_id:string; route_id:string; stop_id:string; starts_on:string; ends_on:string|null; status:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; student_id:string; route_id:string; stop_id:string; starts_on?:string; ends_on?:string|null; status?:string };
+        Update: { route_id?:string; stop_id?:string; starts_on?:string; ends_on?:string|null; status?:string };
+        Relationships: [];
+      };
+      transport_alerts: {
+        Row: { id:string; organization_id:string; route_id:string; title:string; message:string; severity:string; status:string; published_at:string; resolved_at:string|null; created_by:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; route_id:string; title:string; message:string; severity?:string; status?:string; published_at?:string; resolved_at?:string|null; created_by:string };
+        Update: { title?:string; message?:string; severity?:string; status?:string; resolved_at?:string|null };
+        Relationships: [];
+      };
       audit_events: {
         Row: { id: number; organization_id: string; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; occurred_at: string };
         Insert: { organization_id: string; actor_user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json };
@@ -187,6 +223,7 @@ export type Database = {
       save_marks_register: { Args: { p_assessment: string; p_publish: boolean; p_rows: Json }; Returns: number };
       create_homework_with_classes: { Args: { p_org: string; p_subject: string; p_title: string; p_instructions: string; p_due: string; p_minutes: number | null; p_publish: boolean; p_classes: string[] }; Returns: string };
       record_fee_payment: { Args: { p_invoice: string; p_amount: number; p_method: string; p_reference?: string | null }; Returns: string };
+      review_attendance_correction: { Args: { p_id:string; p_decision:string }; Returns:boolean };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
