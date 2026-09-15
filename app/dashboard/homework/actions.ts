@@ -39,3 +39,13 @@ export async function createHomework(_: HomeworkActionState, formData: FormData)
   revalidatePath("/dashboard"); revalidatePath("/dashboard/teacher"); revalidatePath("/dashboard/homework");
   return { success: published ? `Homework published to ${classIds.length} class${classIds.length === 1 ? "" : "es"}.` : "Homework draft saved." };
 }
+
+export async function reviewHomeworkSubmission(_: HomeworkActionState, formData: FormData): Promise<HomeworkActionState> {
+  const context = await getUserContext(); const supabase = await createClient();
+  if (!context || !supabase || !homeworkRoles.includes(context.role)) return { error: "You do not have permission to review homework." };
+  const id = String(formData.get("submission_id") || ""), status = String(formData.get("status") || ""), feedback = String(formData.get("feedback") || "").trim();
+  if (!databaseId.safeParse(id).success || !["returned","completed"].includes(status) || feedback.length > 2000) return { error: "Choose a review status and keep feedback under 2,000 characters." };
+  const { error } = await supabase.from("homework_submissions").update({ status, feedback: feedback || null, reviewed_by: context.userId, reviewed_at: new Date().toISOString() }).eq("id", id).eq("organization_id", context.organizationId);
+  if (error) return { error: error.message };
+  const homeworkId = String(formData.get("homework_id") || ""); revalidatePath(`/dashboard/homework/${homeworkId}`); return { success: "Student response reviewed." };
+}

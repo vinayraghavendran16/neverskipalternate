@@ -4,7 +4,7 @@ The production foundation, people directory, academics, attendance and teacher d
 
 Phase 1 converts the original clickable prototype into a production-oriented Next.js application backed by Supabase Auth, PostgreSQL, Row Level Security and private file storage.
 
-## Phase 1–4 status
+## Phase 1–5 status
 
 - Next.js App Router with strict TypeScript
 - Cookie-backed Supabase authentication
@@ -39,6 +39,12 @@ Phase 1 converts the original clickable prototype into a production-oriented Nex
 - Assessment setup and spreadsheet-style keyboard marks entry
 - One-request batch persistence for attendance and complete class mark registers
 - Route loading states, bounded queries and documented performance budgets
+- Role-specific family and student portal with linked-learner switching
+- Published homework responses, completion tracking and teacher feedback
+- Published assessment and attendance progress for families
+- Targeted school announcements with expiry and acknowledgement
+- Student and staff leave requests with an approval queue
+- Fee invoices, balances and atomic offline payment recording
 
 ## Stack
 
@@ -123,7 +129,7 @@ AUDIT_DATABASE_URL=postgresql://... CONFIRM_DISPOSABLE_DATABASE=yes npm run test
 5. Create the first owner through a controlled administration workflow.
 6. Verify RLS tests, backups, point-in-time recovery and audit access before onboarding a school.
 
-See [Architecture](docs/architecture.md), [Security](docs/security.md), and the [Environment runbook](docs/environment-runbook.md).
+See [Architecture](docs/architecture.md), [Security](docs/security.md), the [Environment runbook](docs/environment-runbook.md), and the [Indian LMS workflow review](docs/india-lms-workflow-review-2026-09-15.md).
 
 ## Repository structure
 
@@ -140,4 +146,4 @@ docs/                      Architecture and operating guidance
 
 ## Next phase
 
-Phase 5 adds parent and student portals, communication delivery, homework visibility, attendance exception notifications and approval interfaces. Offline queues, campus-level policy hardening and production telemetry remain required before a live multi-school pilot.
+External notification delivery, payment-gateway settlement, transport, offline queues and production telemetry remain required before a live multi-school pilot.

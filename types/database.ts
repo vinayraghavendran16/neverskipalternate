@@ -138,6 +138,42 @@ export type Database = {
         Update: { marks?: number | null; result_status?: string; note?: string | null; marked_by?: string; marked_at?: string };
         Relationships: [];
       };
+      announcements: {
+        Row: { id: string; organization_id: string; campus_id: string | null; title: string; body: string; audience: AppRole[]; priority: string; status: string; requires_acknowledgement: boolean; published_at: string | null; expires_at: string | null; created_by: string } & Timestamped;
+        Insert: { id?: string; organization_id: string; campus_id?: string | null; title: string; body: string; audience?: AppRole[]; priority?: string; status?: string; requires_acknowledgement?: boolean; published_at?: string | null; expires_at?: string | null; created_by: string };
+        Update: { campus_id?: string | null; title?: string; body?: string; audience?: AppRole[]; priority?: string; status?: string; requires_acknowledgement?: boolean; published_at?: string | null; expires_at?: string | null };
+        Relationships: [];
+      };
+      announcement_receipts: {
+        Row: { id: string; organization_id: string; announcement_id: string; user_id: string; read_at: string; acknowledged_at: string | null };
+        Insert: { id?: string; organization_id: string; announcement_id: string; user_id: string; read_at?: string; acknowledged_at?: string | null };
+        Update: { read_at?: string; acknowledged_at?: string | null };
+        Relationships: [];
+      };
+      leave_requests: {
+        Row: { id: string; organization_id: string; student_id: string | null; staff_id: string | null; leave_type: string; starts_on: string; ends_on: string; reason: string; status: string; requested_by: string; reviewed_by: string | null; review_note: string | null; reviewed_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; student_id?: string | null; staff_id?: string | null; leave_type: string; starts_on: string; ends_on: string; reason: string; status?: string; requested_by: string; reviewed_by?: string | null; review_note?: string | null; reviewed_at?: string | null };
+        Update: { status?: string; review_note?: string | null; reviewed_by?: string | null; reviewed_at?: string | null };
+        Relationships: [];
+      };
+      homework_submissions: {
+        Row: { id: string; organization_id: string; homework_id: string; student_id: string; response: string | null; status: string; submitted_by: string | null; submitted_at: string | null; feedback: string | null; reviewed_by: string | null; reviewed_at: string | null } & Timestamped;
+        Insert: { id?: string; organization_id: string; homework_id: string; student_id: string; response?: string | null; status?: string; submitted_by?: string | null; submitted_at?: string | null; feedback?: string | null; reviewed_by?: string | null; reviewed_at?: string | null };
+        Update: { response?: string | null; status?: string; submitted_by?: string | null; submitted_at?: string | null; feedback?: string | null; reviewed_by?: string | null; reviewed_at?: string | null };
+        Relationships: [];
+      };
+      fee_invoices: {
+        Row: { id: string; organization_id: string; student_id: string; fee_name: string; amount: number; paid_amount: number; due_on: string; status: string; notes: string | null; created_by: string } & Timestamped;
+        Insert: { id?: string; organization_id: string; student_id: string; fee_name: string; amount: number; paid_amount?: number; due_on: string; status?: string; notes?: string | null; created_by: string };
+        Update: { fee_name?: string; amount?: number; paid_amount?: number; due_on?: string; status?: string; notes?: string | null };
+        Relationships: [];
+      };
+      fee_payments: {
+        Row: { id: string; organization_id: string; invoice_id: string; amount: number; paid_at: string; method: string; reference: string | null; recorded_by: string; created_at: string };
+        Insert: { id?: string; organization_id: string; invoice_id: string; amount: number; paid_at?: string; method: string; reference?: string | null; recorded_by: string };
+        Update: never;
+        Relationships: [];
+      };
       audit_events: {
         Row: { id: number; organization_id: string; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; occurred_at: string };
         Insert: { organization_id: string; actor_user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json };
@@ -150,6 +186,7 @@ export type Database = {
       save_attendance_register: { Args: { p_org: string; p_class: string; p_date: string; p_submit: boolean; p_rows: Json }; Returns: string };
       save_marks_register: { Args: { p_assessment: string; p_publish: boolean; p_rows: Json }; Returns: number };
       create_homework_with_classes: { Args: { p_org: string; p_subject: string; p_title: string; p_instructions: string; p_due: string; p_minutes: number | null; p_publish: boolean; p_classes: string[] }; Returns: string };
+      record_fee_payment: { Args: { p_invoice: string; p_amount: number; p_method: string; p_reference?: string | null }; Returns: string };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
