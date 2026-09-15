@@ -44,7 +44,7 @@ export default async function DashboardPage() {
   const supabase = await createClient();
   if (!supabase) redirect("/login");
   if (context.role === "teacher") redirect("/dashboard/teacher");
-  if (context.role === "parent" || context.role === "student") return <AppShell context={context} pageTitle="My school"><div className="page-head"><div><h1>Welcome, {context.fullName}.</h1><p>View the student records linked to your school account.</p></div></div><section className="card card-body"><h2>My records</h2><Link className="secondary" href="/dashboard/people?tab=students">View student records</Link><h2>Coming later</h2><p>Homework, results, attendance history, payments and messaging are currently unavailable in the family portal. Contact your school office for help.</p></section></AppShell>;
+  if (context.role === "parent" || context.role === "student") redirect("/dashboard/learning");
   const today = schoolDate();
   const [studentsResult, staffResult, classesResult, sessionsResult, activityResult] = await Promise.all([
     supabase.from("students").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active"),

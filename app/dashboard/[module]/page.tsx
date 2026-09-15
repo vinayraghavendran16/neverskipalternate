@@ -5,10 +5,7 @@ import { getUserContext } from "@/lib/auth/context";
 
 const modules = {
   academics: { title: "Academics", eyebrow: "PHASE 3", description: "Classes, sections, subjects, timetables and enrollment workflows.", items: ["Class and section setup", "Subject allocation", "Teacher timetables", "Student enrollment"] },
-  approvals: { title: "Approvals", eyebrow: "PLANNED MODULE", description: "One queue for leave, corrections, purchases and school requests.", items: ["Configurable workflows", "Mobile approvals", "Escalation timers", "Decision audit trail"] },
-  finance: { title: "Finance", eyebrow: "PLANNED MODULE", description: "Fee plans, collections, receipts and reconciliation without spreadsheet drift.", items: ["Fee structures", "Payment collection", "Receipts and refunds", "Finance reporting"] },
   transport: { title: "Transport", eyebrow: "PLANNED MODULE", description: "Routes, stops, vehicles, attendants and live exceptions.", items: ["Route planning", "Student allocation", "Vehicle roster", "Delay communication"] },
-  communication: { title: "Communication", eyebrow: "PLANNED MODULE", description: "Targeted, translated school communication with delivery visibility.", items: ["Audience targeting", "Templates", "Delivery status", "Parent responses"] },
 } as const;
 
 export default async function PlannedModulePage({ params }: { params: Promise<{ module: string }> }) {
