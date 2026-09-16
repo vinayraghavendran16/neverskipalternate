@@ -6,7 +6,7 @@ import { getUserContext } from "@/lib/auth/context";
 const workflows = [
   { title: "School setup", detail: "Create people, classes, subjects, rosters and timetables in that order.", href: "/dashboard/academics", roles: "Owners · administrators · principals" },
   { title: "Daily teaching", detail: "Open today’s timetable, publish the diary, assign homework and record assessments.", href: "/dashboard/teacher", roles: "Teachers · school leaders" },
-  { title: "Attendance", detail: "Open a class, mark exceptions from present, save a draft, then submit the register.", href: "/dashboard/attendance", roles: "Teachers · school leaders" },
+  { title: "Attendance", detail: "Open the next due class, tap only exceptions, review the exception list, then save a draft or submit.", href: "/dashboard/attendance", roles: "Teachers · school leaders" },
   { title: "Family experience", detail: "Review learning, notices, leave requests, fees, transport and the school calendar.", href: "/dashboard/learning", roles: "Students · parents" },
   { title: "School operations", detail: "Manage approvals, invoices, transport exceptions, incidents and release health.", href: "/dashboard/operations", roles: "Owners · administrators" },
   { title: "Notifications", detail: "Read platform notices and choose the channels you consent to receive.", href: "/dashboard/notifications", roles: "All users" },
