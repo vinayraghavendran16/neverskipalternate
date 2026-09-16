@@ -24,6 +24,8 @@ School, branch, owner membership and commercial records are inserted by one serv
 
 Existing tenants remain valid. Their additional profile and commercial fields show as pending until populated.
 
+Open any school row to manage an existing tenant. The platform operator can update its profile, branding, onboarding stage and commercial terms; add up to 50 branches in one batch; complete a legacy branch address; or invite up to 20 additional owners together. These mutations use service-only functions and write tenant audit events.
+
 ## Market-informed fields
 
 The model reflects capabilities consistently emphasized by Indian school ERP vendors: multi-campus aggregation, central student information, admissions and enrollment capacity, staff and payroll context, finance, transport, regulatory or board details, role-based dashboards, white-label branding, onboarding support and account ownership. Product work after this phase should add editable onboarding milestones, module entitlements, payment collection and renewal forecasting.
