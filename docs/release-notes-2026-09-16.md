@@ -12,6 +12,7 @@
 - Added fixed-price forecasted ARR at ₹3,00,000 per non-deleted school, separately from contracted ARR.
 - Added one-month free pilot enforcement and active/expired pilot portfolio metrics.
 - Added a logo-led school portfolio and controlled school deletion with immediate access suspension, retained records and restoration.
+- Split the platform console into Existing schools, Commercials, Pipeline and Pilots tabs for focused portfolio operations.
 
 ## Release-readiness update
 
