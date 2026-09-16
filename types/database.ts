@@ -272,6 +272,7 @@ export type Database = {
       platform_update_school_branch: { Args: { p_org:string; p_branch:string; p_address_line1:string; p_city:string; p_state:string; p_postal_code:string; p_latitude:number|null; p_longitude:number|null; p_email:string; p_phone:string; p_actor_user:string }; Returns:boolean };
       platform_add_school_owners: { Args: { p_org:string; p_owners:Json; p_actor_user:string }; Returns:number };
       platform_set_school_archived: { Args: { p_org:string; p_archived:boolean; p_reason:string; p_actor_user:string }; Returns:boolean };
+      platform_school_metrics: { Args: { p_org:string }; Returns:Json };
       list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
     };
     Enums: { app_role: AppRole };
