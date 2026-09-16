@@ -15,6 +15,7 @@
 - Split the platform console into Existing schools, Commercials, Pipeline and Pilots tabs for focused portfolio operations.
 - Reorganized the platform console into full-width School portfolio, Branches, Owners, Commercials and Onboarding tabs. School creation, implementation pipeline and one-month pilots now share the dedicated Onboarding workspace.
 - Split each school portfolio into Overview, Metrics, School & commercials, Branches and Owners tabs, with a bounded school-level KPI dashboard.
+- Rebuilt attendance around one-tap exception marking, approved-leave defaults, assigned teacher classes, live status counts, exception review, common reasons, undo and rapid date navigation.
 
 ## Release-readiness update
 
