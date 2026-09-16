@@ -76,6 +76,16 @@ insert into public.attendance_corrections(id,organization_id,attendance_record_i
 select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
 select public.review_attendance_correction(pg_temp.id(125),'approved');
 select pg_temp.assert_true((select status='present' from public.attendance_records where student_id=pg_temp.id(50)),'approved correction updates attendance atomically');
+select public.report_operational_incident(repeat('a',64),'/dashboard/attendance/:id');
+select public.report_operational_incident(repeat('a',64),'/dashboard/attendance/:id');
+select pg_temp.assert_true((select occurrence_count=2 from public.operational_incidents where fingerprint=repeat('a',64)),'incident reports deduplicate and count occurrences');
+select set_config('request.jwt.claim.sub',pg_temp.id(2)::text,true);
+select public.report_operational_incident(repeat('b',64),'/dashboard/teacher');
+select pg_temp.assert_true((select count(*)=0 from public.operational_incidents),'teacher can report but cannot read operational incidents');
+select pg_temp.reject($q$insert into public.operational_incidents(organization_id,fingerprint,title,summary,reported_by) values(pg_temp.id(10),repeat('c',64),'Raw','Direct report',pg_temp.id(2))$q$,'members cannot bypass redacted incident RPC');
+select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
+update public.operational_incidents set status='resolved',resolved_by=pg_temp.id(1),resolved_at=now() where fingerprint=repeat('a',64);
+select pg_temp.assert_true((select status='resolved' from public.operational_incidents where fingerprint=repeat('a',64)),'owner can resolve an operational incident');
 insert into public.transport_vehicles(id,organization_id,campus_id,registration_number,label,capacity) values(pg_temp.id(130),pg_temp.id(10),pg_temp.id(20),'KA01TEST','Bus 1',1);
 insert into public.transport_routes(id,organization_id,campus_id,vehicle_id,name,code) values(pg_temp.id(131),pg_temp.id(10),pg_temp.id(20),pg_temp.id(130),'Main Route','R1'),(pg_temp.id(132),pg_temp.id(10),pg_temp.id(20),null,'Unrelated Route','R2');
 insert into public.transport_stops(id,organization_id,route_id,name,stop_order) values(pg_temp.id(133),pg_temp.id(10),pg_temp.id(131),'First Stop',1),(pg_temp.id(134),pg_temp.id(10),pg_temp.id(132),'Other Stop',1);

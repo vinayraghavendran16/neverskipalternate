@@ -673,3 +673,13 @@ button, .secondary, .primary, .row-link { min-height: 44px; }
 
 @media(max-width:1000px){.inline-workflow,.assignment-form,.alert-form{grid-template-columns:1fr 1fr}.inline-workflow button{grid-column:1/-1}.form-grow{grid-column:1/-1}}
 @media(max-width:620px){.inline-workflow,.assignment-form,.alert-form{grid-template-columns:1fr}.inline-workflow>*{grid-column:1}.route-detail{padding-left:0}.route-detail li{grid-template-columns:28px 1fr}.route-detail li small{grid-column:2}.route-list summary{grid-template-columns:44px 1fr}.route-list summary>span:last-child{grid-column:2}.event-list{padding:8px 14px}}
+
+/* Phase 7: production operations */
+.ops-metrics .health-ok{color:var(--green)}
+.ops-metrics .health-bad{color:var(--danger)}
+.release-value{font-size:18px!important;overflow-wrap:anywhere}
+.incident-list{padding:8px 18px;display:grid}
+.incident-row{padding:16px 0;display:flex;justify-content:space-between;gap:18px;align-items:center;border-bottom:1px solid #edf0eb}
+.incident-row h3{margin:8px 0 5px;font-size:14px}.incident-row p{margin:0 0 6px;color:var(--muted);font-size:11px}.incident-row small{color:var(--muted);font-size:9px}
+.prune-form{padding:14px 18px}.ops-signals{padding:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ops-signals div{padding:12px;border-radius:9px;background:#f7f9f5;text-align:center}.ops-signals b,.ops-signals span{display:block}.ops-signals b{font-size:18px}.ops-signals span{margin-top:3px;color:var(--muted);font-size:9px}.compact-activity{padding:0 18px}.recovery-guide{margin:8px 18px 18px;padding:15px;border-radius:10px;background:var(--mint)}.recovery-guide h3{margin:0;font-size:12px}.recovery-guide ol{margin:10px 0 0;padding-left:17px;color:var(--muted);font-size:10px;line-height:1.7}
+@media(max-width:700px){.incident-row{align-items:flex-start;flex-direction:column}.ops-signals{grid-template-columns:1fr}.incident-row .decision-form{width:100%}}

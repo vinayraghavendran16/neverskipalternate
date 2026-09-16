@@ -210,6 +210,12 @@ export type Database = {
         Update: { title?:string; message?:string; severity?:string; status?:string; resolved_at?:string|null };
         Relationships: [];
       };
+      operational_incidents: {
+        Row: { id:string; organization_id:string; fingerprint:string; source:string; severity:string; status:string; title:string; summary:string; context:Json; occurrence_count:number; first_seen_at:string; last_seen_at:string; reported_by:string|null; acknowledged_by:string|null; acknowledged_at:string|null; resolved_by:string|null; resolved_at:string|null } & Timestamped;
+        Insert: { id?:string; organization_id:string; fingerprint:string; source?:string; severity?:string; status?:string; title:string; summary:string; context?:Json; occurrence_count?:number; first_seen_at?:string; last_seen_at?:string; reported_by?:string|null; acknowledged_by?:string|null; acknowledged_at?:string|null; resolved_by?:string|null; resolved_at?:string|null };
+        Update: { status?:string; acknowledged_by?:string|null; acknowledged_at?:string|null; resolved_by?:string|null; resolved_at?:string|null };
+        Relationships: [];
+      };
       audit_events: {
         Row: { id: number; organization_id: string; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; occurred_at: string };
         Insert: { organization_id: string; actor_user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json };
@@ -224,6 +230,7 @@ export type Database = {
       create_homework_with_classes: { Args: { p_org: string; p_subject: string; p_title: string; p_instructions: string; p_due: string; p_minutes: number | null; p_publish: boolean; p_classes: string[] }; Returns: string };
       record_fee_payment: { Args: { p_invoice: string; p_amount: number; p_method: string; p_reference?: string | null }; Returns: string };
       review_attendance_correction: { Args: { p_id:string; p_decision:string }; Returns:boolean };
+      report_operational_incident: { Args: { p_fingerprint:string; p_route:string }; Returns:string };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
