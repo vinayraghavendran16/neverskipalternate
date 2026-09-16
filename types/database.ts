@@ -252,6 +252,8 @@ export type Database = {
       health_check: { Args: Record<string,never>; Returns:boolean };
       create_announcement_with_notifications: { Args: { p_org:string; p_campus:string|null; p_title:string; p_body:string; p_priority:string; p_audience:AppRole[]; p_requires_acknowledgement:boolean; p_expires_at:string|null }; Returns:string };
       set_notification_preferences: { Args: { p_org:string; p_in_app:boolean; p_email:boolean; p_sms:boolean }; Returns:undefined };
+      create_owned_school: { Args: { p_name:string; p_slug:string; p_campus_name:string; p_campus_code:string }; Returns:string };
+      list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;

@@ -48,7 +48,7 @@ export default async function HelpPage() {
       </div></aside>
     </div>
 
-    <section className="card help-section"><header className="card-header"><div><h2>Release notes</h2><p>What changed across the delivered product.</p></div></header><div className="release-list">{releases.map(([title, detail])=><article key={title}><span className="check" aria-hidden="true">✓</span><div><h3>{title}</h3><p>{detail}</p></div></article>)}</div></section>
+    <section className="card help-section" id="release-notes"><header className="card-header"><div><h2>Release notes</h2><p>What changed across the delivered product.</p></div></header><div className="release-list">{releases.map(([title, detail])=><article key={title}><span className="check" aria-hidden="true">✓</span><div><h3>{title}</h3><p>{detail}</p></div></article>)}</div></section>
 
     <section className="card help-section"><header className="card-header"><div><h2>Prioritized next phases</h2><p>Sequenced by operational value and risk reduction.</p></div><span className="status status-warning">PLANNED</span></header><div className="roadmap-list">{nextPhases.map(([number,title,detail])=><article key={number}><b>{number}</b><div><h3>{title}</h3><p>{detail}</p></div></article>)}</div><p className="parked-note"><b>Parked:</b> Ask Northstar, voice input, ElevenLabs and automated voice announcements remain outside the active roadmap until privacy, consent, retention, provider and cost decisions are approved.</p></section>
   </AppShell>;

@@ -3,41 +3,37 @@ import { redirect } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { SetupDashboard } from "@/components/setup-dashboard";
 import { getUserContext } from "@/lib/auth/context";
+import { activityFilter, activityHref, activityTypeFilters, activityTypes, nextDate, validDate } from "@/lib/dashboard";
 import { isSupabaseConfigured } from "@/lib/env";
+import { releaseLabel } from "@/lib/operations";
 import { createClient } from "@/lib/supabase/server";
+import { createCampus, createSchool, inviteUser, switchOrganization, updateAccess } from "./actions";
 
-function schoolDate() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-}
-
-function greeting() {
-  const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false }).format(new Date()));
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
-}
+function schoolDate() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
+function greeting() { const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hour12: false }).format(new Date())); return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"; }
+function formatActivityDate(value: string) { return new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
 
 const activityLabels: Record<string, string> = {
-  "attendance.submitted": "Attendance submitted",
-  "attendance.draft_saved": "Attendance draft saved",
-  "academics.class_created": "Class created",
-  "academics.students_enrolled": "Class roster updated",
-  "academics.subject_created": "Subject created",
-  "academics.subject_allocated": "Subject allocated",
-  "academics.timetable_updated": "Timetable updated",
-  "people.student_created": "Student added",
-  "people.staff_created": "Staff member added",
-  "people.guardian_created": "Guardian added",
-  "teaching.diary_published": "Class diary published",
-  "teaching.diary_saved": "Class diary draft saved",
-  "homework.published": "Homework published",
-  "homework.draft_created": "Homework draft saved",
-  "assessment.created": "Assessment created",
-  "assessment.marks_saved": "Assessment marks saved",
-  "assessment.marks_published": "Assessment marks published",
+  "attendance.submitted": "Attendance submitted", "attendance.draft_saved": "Attendance draft saved", "academics.class_created": "Class created",
+  "academics.students_enrolled": "Class roster updated", "academics.subject_created": "Subject created", "academics.subject_allocated": "Subject allocated",
+  "academics.timetable_updated": "Timetable updated", "people.student_created": "Student added", "people.staff_created": "Staff member added",
+  "people.guardian_created": "Guardian added", "teaching.diary_published": "Class diary published", "teaching.diary_saved": "Class diary draft saved",
+  "homework.published": "Homework published", "homework.draft_created": "Homework draft saved", "assessment.created": "Assessment created",
+  "assessment.marks_saved": "Assessment marks saved", "assessment.marks_published": "Assessment marks published", "organizations.created": "School created",
 };
+const roleIntroductions = {
+  owner: "Your schools, branches, access and daily operations in one place.", administrator: "School operations, access and exceptions that need action today.",
+  principal: "Academic delivery, attendance and approvals that need leadership today.", staff: "People records and daily school tasks available to your role.",
+} as const;
+const quickActions = {
+  owner: [["＋", "Add student", "Create a student record", "/dashboard/people/students/new"], ["⇧", "Import students", "Upload a CSV roster", "/dashboard/people/import"], ["▦", "Manage classes", "Rosters and timetable", "/dashboard/academics"], ["⚙", "School setup", "Branches and access", "/dashboard#school-administration"]],
+  administrator: [["＋", "Add student", "Create a student record", "/dashboard/people/students/new"], ["⇧", "Import students", "Upload a CSV roster", "/dashboard/people/import"], ["▦", "Manage classes", "Rosters and timetable", "/dashboard/academics"], ["⚙", "School access", "Branches and users", "/dashboard#school-administration"]],
+  principal: [["＋", "Add student", "Create a student record", "/dashboard/people/students/new"], ["▦", "Manage classes", "Rosters and timetable", "/dashboard/academics"], ["◫", "Take attendance", "Mark daily exceptions", "/dashboard/attendance"], ["✓", "Review approvals", "Leave and corrections", "/dashboard/approvals"]],
+  staff: [["＋", "Add student", "Create a student record", "/dashboard/people/students/new"], ["◉", "People directory", "Students and guardians", "/dashboard/people"], ["◫", "Take attendance", "Mark daily exceptions", "/dashboard/attendance"], ["✓", "Open approvals", "Requests visible to you", "/dashboard/approvals"]],
+} as const;
+type DashboardSearch = { activity_type?: string; activity_from?: string; activity_to?: string; campus?: string; admin_success?: string; admin_error?: string };
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }: { searchParams: Promise<DashboardSearch> }) {
   if (!isSupabaseConfigured()) return <SetupDashboard />;
   const context = await getUserContext();
   if (!context) redirect("/login");
@@ -45,31 +41,58 @@ export default async function DashboardPage() {
   if (!supabase) redirect("/login");
   if (context.role === "teacher") redirect("/dashboard/teacher");
   if (context.role === "parent" || context.role === "student") redirect("/dashboard/learning");
-  const today = schoolDate();
-  const [studentsResult, staffResult, classesResult, sessionsResult, activityResult] = await Promise.all([
-    supabase.from("students").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active"),
-    supabase.from("staff_profiles").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active"),
-    supabase.from("classes").select("id, grade, section").eq("organization_id", context.organizationId).order("grade"),
-    supabase.from("attendance_sessions").select("id, class_id, status, submitted_at").eq("organization_id", context.organizationId).eq("attendance_date", today),
-    supabase.from("audit_events").select("id, action, occurred_at, metadata").eq("organization_id", context.organizationId).order("occurred_at", { ascending: false }).limit(6),
+  const query = await searchParams;
+  const today = schoolDate(), activityType = activityFilter(query.activity_type), activityFrom = validDate(query.activity_from), activityTo = validDate(query.activity_to);
+  const leadership = ["owner", "administrator", "principal"].includes(context.role), canConfigure = ["owner", "administrator"].includes(context.role);
+  const { data: campuses, error: campusError } = await supabase.from("campuses").select("id, name, code").eq("organization_id", context.organizationId).order("name");
+  if (campusError) throw new Error("School branches could not be loaded. Please retry.");
+  const allowedCampuses = campuses || [], requestedCampus = context.campusId || query.campus || "all";
+  const selectedCampus = requestedCampus === "all" || !allowedCampuses.some((entry) => entry.id === requestedCampus) ? null : requestedCampus;
+  let studentsQuery = supabase.from("students").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active");
+  let staffQuery = supabase.from("staff_profiles").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "active");
+  let classesQuery = supabase.from("classes").select("id, grade, section, campus_id").eq("organization_id", context.organizationId).order("grade");
+  if (selectedCampus) { studentsQuery = studentsQuery.eq("campus_id", selectedCampus); staffQuery = staffQuery.eq("campus_id", selectedCampus); classesQuery = classesQuery.eq("campus_id", selectedCampus); }
+  let activityQuery = supabase.from("audit_events").select("id, action, entity_type, occurred_at, metadata").eq("organization_id", context.organizationId).order("occurred_at", { ascending: false }).limit(30);
+  if (activityType !== "all" && activityTypeFilters[activityType]) activityQuery = activityQuery.or(activityTypeFilters[activityType]!);
+  if (activityFrom) activityQuery = activityQuery.gte("occurred_at", `${activityFrom}T00:00:00+05:30`);
+  if (activityTo) activityQuery = activityQuery.lt("occurred_at", `${nextDate(activityTo)}T00:00:00+05:30`);
+  const [studentsResult, staffResult, classesResult, sessionsResult, activityResult, leaveResult, correctionsResult, invoicesResult, eventsResult, accessResult] = await Promise.all([
+    studentsQuery, staffQuery, classesQuery, supabase.from("attendance_sessions").select("id, class_id, status, submitted_at").eq("organization_id", context.organizationId).eq("attendance_date", today), activityQuery,
+    supabase.from("leave_requests").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "pending"),
+    supabase.from("attendance_corrections").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).eq("status", "pending"),
+    supabase.from("fee_invoices").select("amount, paid_amount, status").eq("organization_id", context.organizationId).in("status", ["due", "partial", "overdue"]),
+    supabase.from("school_events").select("id", { count: "exact", head: true }).eq("organization_id", context.organizationId).gte("starts_at", new Date().toISOString()).lte("starts_at", new Date(new Date().getTime() + 7 * 86400000).toISOString()),
+    canConfigure ? supabase.rpc("list_organization_access", { p_org: context.organizationId }) : Promise.resolve({ data: [], error: null }),
   ]);
-  if ([studentsResult, staffResult, classesResult, sessionsResult, activityResult].some((result) => result.error)) throw new Error("School data could not be loaded. Please retry.");
-  const classes = classesResult.data || [];
-  const sessions = new Map((sessionsResult.data || []).map((session) => [session.class_id, session]));
+  if ([studentsResult, staffResult, classesResult, sessionsResult].some((result) => result.error) || (leadership && activityResult.error)) throw new Error("Command Centre data could not be loaded. Please retry.");
+  const classes = classesResult.data || [], selectedClassIds = new Set(classes.map((entry) => entry.id));
+  const sessions = new Map((sessionsResult.data || []).filter((entry) => selectedClassIds.has(entry.class_id)).map((session) => [session.class_id, session]));
   const completed = [...sessions.values()].filter((session) => session.status === "submitted" || session.status === "locked").length;
   const dueClasses = classes.filter((classRecord) => !["submitted", "locked"].includes(sessions.get(classRecord.id)?.status || ""));
-  const completion = classes.length ? Math.round((completed / classes.length) * 100) : 0;
-  const firstName = context.fullName.split(/\s+/)[0] || context.fullName;
+  const completion = classes.length ? Math.round((completed / classes.length) * 100) : 0, firstName = context.fullName.split(/\s+/)[0] || context.fullName;
+  const release = releaseLabel(process.env.VERCEL_GIT_COMMIT_SHA || process.env.NEXT_PUBLIC_RELEASE_SHA);
+  const outstanding = invoicesResult.error ? null : (invoicesResult.data || []).reduce((sum, entry) => sum + Math.max(0, Number(entry.amount) - Number(entry.paid_amount)), 0);
+  const approvalCount = leaveResult.error || correctionsResult.error ? null : (leaveResult.count || 0) + (correctionsResult.count || 0), accessDirectory = accessResult.data || [];
+  const campusNames = new Map(allowedCampuses.map((entry) => [entry.id, entry.name])), actions = quickActions[context.role as keyof typeof quickActions] || quickActions.staff;
 
-  return (
-    <AppShell context={context}>
-      <div className="page-head command-head"><div><span className="eyebrow">COMMAND CENTRE · {new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" }).format(new Date()).toUpperCase()}</span><h1>{greeting()}, {firstName}.</h1><p>Here is what needs attention across {context.organizationName} today.</p></div><span className="release">Release {process.env.NEXT_PUBLIC_RELEASE_SHA || "local"}</span></div>
-      <section className="metrics command-metrics"><Link className="metric" href="/dashboard/people?tab=students"><span>Active students</span><strong>{studentsResult.count || 0}</strong><small>Open student directory →</small></Link><Link className="metric" href="/dashboard/people?tab=staff"><span>Active staff</span><strong>{staffResult.count || 0}</strong><small>Open staff directory →</small></Link><Link className="metric" href="/dashboard/academics"><span>Classes</span><strong>{classes.length}</strong><small>Manage academics →</small></Link><Link className="metric" href="/dashboard/attendance"><span>Attendance today</span><strong>{completion}%</strong><small>{completed} of {classes.length} submitted →</small></Link></section>
-      <div className="command-grid">
-        <section className="card today-card"><header className="card-header"><div><h2>Today’s attention</h2><p>Daily work that is still open.</p></div><span className={`status ${dueClasses.length ? "status-warning" : ""}`}>{dueClasses.length ? `${dueClasses.length} due` : "All clear"}</span></header><div className="attention-list">{dueClasses.slice(0, 6).map((classRecord) => { const state = sessions.get(classRecord.id)?.status || "not_started"; return <Link href={`/dashboard/attendance/${classRecord.id}?date=${today}`} key={classRecord.id}><span className="attention-icon">◫</span><div><b>{classRecord.grade} · Section {classRecord.section}</b><small>Attendance {state.replace("_", " ")}</small></div><span>Mark now →</span></Link>; })}{!classes.length && <div className="attention-empty"><b>Set up your first class</b><small>Create the academic structure before starting daily attendance.</small><Link className="secondary" href="/dashboard/academics">Open academics</Link></div>}{classes.length > 0 && !dueClasses.length && <div className="attention-empty success-empty"><b>Attendance is complete</b><small>Every class has submitted today’s register.</small><Link className="secondary" href="/dashboard/attendance">Review registers</Link></div>}</div></section>
-        <aside className="command-side"><section className="card quick-card"><header className="card-header"><div><h2>Quick actions</h2><p>Start common school tasks.</p></div></header><div className="quick-actions"><Link href="/dashboard/people/students/new"><span>＋</span><div><b>Add student</b><small>Create a student record</small></div></Link><Link href="/dashboard/people/import"><span>⇧</span><div><b>Import students</b><small>Upload a CSV roster</small></div></Link><Link href="/dashboard/academics"><span>▦</span><div><b>Manage classes</b><small>Rosters and timetable</small></div></Link><Link href="/dashboard/attendance"><span>◫</span><div><b>Take attendance</b><small>Mark daily exceptions</small></div></Link></div></section></aside>
-      </div>
-      <section className="card activity-card"><header className="card-header"><div><h2>Recent activity</h2><p>Latest audited changes in this school tenant.</p></div><span className="status">AUDITED</span></header><div className="activity-list">{(activityResult.data || []).map((event) => <div key={event.id}><span className="activity-dot" /><div><b>{activityLabels[event.action] || event.action.replaceAll(".", " ")}</b><small>{new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" }).format(new Date(event.occurred_at))}</small></div></div>)}{!activityResult.data?.length && <p className="empty-copy">No recent activity is visible for this role yet.</p>}</div></section>
-    </AppShell>
-  );
+  return <AppShell context={context}>
+    <div className="page-head command-head"><div><span className="eyebrow">COMMAND CENTRE · {new Intl.DateTimeFormat("en-IN", { timeZone: "Asia/Kolkata", weekday: "long", day: "numeric", month: "long" }).format(new Date()).toUpperCase()}</span><h1>{greeting()}, {firstName}.</h1><p>{roleIntroductions[context.role as keyof typeof roleIntroductions] || roleIntroductions.staff}</p></div><Link className="release release-link" href="/dashboard/help#release-notes" aria-label={`Open release notes for release ${release}`}>Release {release} →</Link></div>
+    <section className="command-scope" aria-label="Command Centre scope">
+      {context.availableOrganizations.length > 1 && <form action={switchOrganization} className="scope-control"><label htmlFor="organization_id">School</label><select id="organization_id" name="organization_id" defaultValue={context.organizationId}>{context.availableOrganizations.map((entry) => <option value={entry.id} key={entry.id}>{entry.name} · {entry.role}</option>)}</select><button className="secondary compact">Switch</button></form>}
+      {allowedCampuses.length > 1 && !context.campusId && <form className="scope-control"><label htmlFor="campus">Branch</label><select id="campus" name="campus" defaultValue={selectedCampus || "all"}><option value="all">All branches</option>{allowedCampuses.map((entry) => <option value={entry.id} key={entry.id}>{entry.name}</option>)}</select><button className="secondary compact">Apply</button></form>}
+      <div className="scope-note"><b>{selectedCampus ? campusNames.get(selectedCampus) : context.campusName || "All branches"}</b><span>Dashboard scope</span></div>
+    </section>
+    <section className="metrics command-metrics"><Link className="metric" href="/dashboard/people?tab=students"><span>Active students</span><strong>{studentsResult.count || 0}</strong><small>Open student directory →</small></Link><Link className="metric" href="/dashboard/people?tab=staff"><span>Active staff</span><strong>{staffResult.count || 0}</strong><small>Open staff directory →</small></Link><Link className="metric" href="/dashboard/academics"><span>Classes</span><strong>{classes.length}</strong><small>Manage academics →</small></Link><Link className="metric" href="/dashboard/attendance"><span>Attendance today</span><strong>{completion}%</strong><small>{completed} of {classes.length} submitted →</small></Link></section>
+    {leadership && <section className="operational-pulse" aria-label="Operational pulse"><Link href="/dashboard/approvals"><span>Pending approvals</span><strong>{approvalCount ?? "—"}</strong><small>Leave and corrections →</small></Link><Link href="/dashboard/finance"><span>Fees outstanding</span><strong>{outstanding === null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(outstanding)}</strong><small>Open fee ledger →</small></Link><Link href="/dashboard/calendar"><span>Next 7 days</span><strong>{eventsResult.error ? "—" : eventsResult.count || 0}</strong><small>School events →</small></Link></section>}
+    <div className="command-grid"><section className="card today-card"><header className="card-header"><div><h2>Today’s attention</h2><p>Daily work that is still open.</p></div><span className={`status ${dueClasses.length ? "status-warning" : ""}`}>{dueClasses.length ? `${dueClasses.length} due` : "All clear"}</span></header><div className="attention-list">{dueClasses.slice(0, 6).map((classRecord) => { const state = sessions.get(classRecord.id)?.status || "not_started"; return <Link href={`/dashboard/attendance/${classRecord.id}?date=${today}`} key={classRecord.id}><span className="attention-icon">◫</span><div><b>{classRecord.grade} · Section {classRecord.section}</b><small>Attendance {state.replace("_", " ")}</small></div><span>Mark now →</span></Link>; })}{!classes.length && <div className="attention-empty"><b>Set up your first class</b><small>Create the academic structure before starting daily attendance.</small><Link className="secondary" href="/dashboard/academics">Open academics</Link></div>}{classes.length > 0 && !dueClasses.length && <div className="attention-empty success-empty"><b>Attendance is complete</b><small>Every class has submitted today’s register.</small><Link className="secondary" href="/dashboard/attendance">Review registers</Link></div>}</div></section>
+      <aside className="command-side"><section className="card quick-card"><header className="card-header"><div><h2>Quick actions</h2><p>Actions available to {context.role.replace("administrator", "an administrator")}.</p></div></header><div className="quick-actions">{actions.map(([icon, title, detail, href]) => <Link href={href} key={title}><span>{icon}</span><div><b>{title}</b><small>{detail}</small></div></Link>)}</div></section></aside></div>
+    {canConfigure && <section className="card school-admin" id="school-administration"><header className="card-header"><div><h2>School, branch and access administration</h2><p>Owners create schools and grant administrator rights. Administrators can add branches and operational users.</p></div><span className="status">{context.role.toUpperCase()}</span></header>
+      {(query.admin_success || query.admin_error) && <p className={query.admin_error ? "form-error admin-message" : "form-success admin-message"} role="status">{query.admin_error || query.admin_success}</p>}
+      <div className="admin-forms">{context.role === "owner" && <form action={createSchool} className="admin-form"><h3>Add another school</h3><p>Creates a separate school tenant and its first branch.</p><label className="field">School name<input name="name" required maxLength={160} /></label><label className="field">URL slug<input name="slug" required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="northstar-east" /></label><div className="split-fields"><label className="field">First branch<input name="campus_name" required /></label><label className="field">Code<input name="campus_code" required maxLength={24} /></label></div><button className="primary">Create school</button></form>}
+        <form action={createCampus} className="admin-form"><h3>Add a branch</h3><p>Adds a campus inside {context.organizationName}.</p><label className="field">Branch name<input name="name" required maxLength={160} /></label><label className="field">Branch code<input name="code" required maxLength={24} placeholder="EAST" /></label><button className="primary">Add branch</button></form>
+        <form action={inviteUser} className="admin-form"><h3>Invite a user</h3><p>New users receive a secure Supabase invitation.</p><label className="field">Full name<input name="full_name" required maxLength={160} /></label><label className="field">Email<input name="email" type="email" required /></label><div className="split-fields"><label className="field">Role<select name="role" defaultValue="staff">{context.role === "owner" && <option value="administrator">Administrator</option>}<option value="principal">Principal</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select></label><label className="field">Branch<select name="campus_id" defaultValue=""><option value="">All branches</option>{allowedCampuses.map((entry) => <option value={entry.id} key={entry.id}>{entry.name}</option>)}</select></label></div><button className="primary">Send invitation</button></form></div>
+      <div className="access-directory"><h3>Current access</h3><p>Parent and student login access remains tied to their People records.</p>{accessResult.error && <p className="empty-copy">Apply the Command Centre database migration to load the access directory.</p>}{accessDirectory.map((member) => member.role === "owner" ? <div className="access-row" key={member.membership_id}><div><b>{member.full_name}</b><small>{member.email}</small></div><span className="status">Owner</span></div> : <form action={updateAccess} className="access-row" key={member.membership_id}><input type="hidden" name="membership_id" value={member.membership_id} /><div><b>{member.full_name}</b><small>{member.email}</small></div><select name="role" defaultValue={member.role} aria-label={`Role for ${member.full_name}`}>{context.role === "owner" && <option value="administrator">Administrator</option>}<option value="principal">Principal</option><option value="teacher">Teacher</option><option value="staff">Staff</option></select><select name="campus_id" defaultValue={member.campus_id || ""} aria-label={`Branch for ${member.full_name}`}><option value="">All branches</option>{allowedCampuses.map((entry) => <option value={entry.id} key={entry.id}>{entry.name}</option>)}</select><select name="status" defaultValue={member.status} aria-label={`Status for ${member.full_name}`}><option value="active">Active</option><option value="suspended">Suspended</option></select><button className="secondary compact">Save</button></form>)}</div>
+    </section>}
+    {leadership ? <section className="card activity-card"><header className="card-header activity-header"><div><h2>Recent activity</h2><p>Open an audited change in the module where it happened.</p></div><span className="status">AUDITED</span></header><form className="activity-filters">{selectedCampus && <input type="hidden" name="campus" value={selectedCampus} />}<label>Type<select name="activity_type" defaultValue={activityType}>{activityTypes.map((type) => <option value={type} key={type}>{type === "all" ? "All activity" : type[0].toUpperCase() + type.slice(1)}</option>)}</select></label><label>From<input type="date" name="activity_from" defaultValue={activityFrom} /></label><label>To<input type="date" name="activity_to" defaultValue={activityTo} /></label><button className="secondary compact">Filter</button>{(activityType !== "all" || activityFrom || activityTo) && <Link className="text-link" href={selectedCampus ? `/dashboard?campus=${selectedCampus}#recent-activity` : "/dashboard#recent-activity"}>Clear</Link>}</form><div className="activity-list" id="recent-activity">{(activityResult.data || []).map((event) => <Link href={activityHref(event.action, event.entity_type)} key={event.id}><span className="activity-dot" /><div><b>{activityLabels[event.action] || event.action.replaceAll(".", " ")}</b><small>{formatActivityDate(event.occurred_at)}</small></div><span aria-hidden="true">→</span></Link>)}{!activityResult.data?.length && <p className="empty-copy">No activity matches these filters.</p>}</div></section> : <section className="card activity-card role-boundary"><div><span className="activity-dot" /><div><h2>Leadership audit stream</h2><p>The school-wide audit stream is limited to owners, administrators and principals. Your shortcuts and metrics above remain specific to your staff access.</p></div></div></section>}
+  </AppShell>;
 }
