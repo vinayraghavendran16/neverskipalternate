@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import type { AppRole } from "@/types/database";
 
@@ -12,6 +13,7 @@ export type UserContext = {
   campusName: string | null;
   role: AppRole;
   unreadNotifications: number;
+  availableOrganizations: { id: string; name: string; role: AppRole; campusId: string | null }[];
 };
 
 export const getUserContext = cache(async (): Promise<UserContext | null> => {
@@ -21,21 +23,23 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: membership } = await supabase
+  const { data: memberships } = await supabase
     .from("memberships")
     .select("organization_id, campus_id, role")
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at")
-    .order("id")
-    .limit(1)
-    .maybeSingle();
+    .order("id");
 
-  if (!membership) return null;
+  if (!memberships?.length) return null;
+  const cookieStore = await cookies();
+  const requestedOrganization = cookieStore.get("northstar_active_organization")?.value;
+  const membership = memberships.find((entry) => entry.organization_id === requestedOrganization) || memberships[0];
+  const organizationIds = [...new Set(memberships.map((entry) => entry.organization_id))];
 
-  const [{ data: profile }, { data: organization }, { data: campus }, unreadResult] = await Promise.all([
+  const [{ data: profile }, { data: organizations }, { data: campus }, unreadResult] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
-    supabase.from("organizations").select("name").eq("id", membership.organization_id).maybeSingle(),
+    supabase.from("organizations").select("id, name").in("id", organizationIds),
     membership.campus_id
       ? supabase.from("campuses").select("name").eq("id", membership.campus_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -48,17 +52,24 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
       .is("read_at", null)
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
   ]);
+  const organizationNames = new Map((organizations || []).map((entry) => [entry.id, entry.name]));
 
   return {
     userId: user.id,
     email: user.email || "",
     fullName: profile?.full_name || user.email?.split("@")[0] || "User",
     organizationId: membership.organization_id,
-    organizationName: organization?.name || "School",
+    organizationName: organizationNames.get(membership.organization_id) || "School",
     campusId: membership.campus_id,
     campusName: campus?.name || null,
     role: membership.role as AppRole,
     unreadNotifications: unreadResult.count || 0,
+    availableOrganizations: memberships.map((entry) => ({
+      id: entry.organization_id,
+      name: organizationNames.get(entry.organization_id) || "School",
+      role: entry.role as AppRole,
+      campusId: entry.campus_id,
+    })),
   };
 });
 
