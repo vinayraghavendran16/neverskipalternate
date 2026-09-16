@@ -45,19 +45,19 @@ export type Database = {
       staff_profiles: {
         Row: { id: string; organization_id: string; campus_id: string; user_id: string | null; employee_number: string; first_name: string; last_name: string | null; email: string | null; phone: string | null; designation: string; department: string | null; employment_type: string; joined_on: string | null; status: string } & Timestamped;
         Insert: { id?: string; organization_id: string; campus_id: string; user_id?: string | null; employee_number: string; first_name: string; last_name?: string | null; email?: string | null; phone?: string | null; designation: string; department?: string | null; employment_type?: string; joined_on?: string | null; status?: string };
-        Update: { campus_id?: string; employee_number?: string; first_name?: string; last_name?: string | null; email?: string | null; phone?: string | null; designation?: string; department?: string | null; employment_type?: string; joined_on?: string | null; status?: string };
+        Update: { user_id?: string | null; campus_id?: string; employee_number?: string; first_name?: string; last_name?: string | null; email?: string | null; phone?: string | null; designation?: string; department?: string | null; employment_type?: string; joined_on?: string | null; status?: string };
         Relationships: [];
       };
       guardians: {
         Row: { id: string; organization_id: string; user_id: string | null; first_name: string; last_name: string | null; email: string | null; phone: string; occupation: string | null; address: string | null; status: string } & Timestamped;
         Insert: { id?: string; organization_id: string; user_id?: string | null; first_name: string; last_name?: string | null; email?: string | null; phone: string; occupation?: string | null; address?: string | null; status?: string };
-        Update: { first_name?: string; last_name?: string | null; email?: string | null; phone?: string; occupation?: string | null; address?: string | null; status?: string };
+        Update: { user_id?: string | null; first_name?: string; last_name?: string | null; email?: string | null; phone?: string; occupation?: string | null; address?: string | null; status?: string };
         Relationships: [];
       };
       guardian_relationships: {
         Row: { id: string; organization_id: string; student_id: string; guardian_id: string; guardian_user_id: string | null; relationship: string; is_primary: boolean; can_pick_up: boolean; created_at: string };
         Insert: { id?: string; organization_id: string; student_id: string; guardian_id: string; guardian_user_id?: string | null; relationship: string; is_primary?: boolean; can_pick_up?: boolean };
-        Update: { relationship?: string; is_primary?: boolean; can_pick_up?: boolean };
+        Update: { guardian_user_id?: string | null; relationship?: string; is_primary?: boolean; can_pick_up?: boolean };
         Relationships: [];
       };
       classes: {
@@ -253,6 +253,7 @@ export type Database = {
       create_announcement_with_notifications: { Args: { p_org:string; p_campus:string|null; p_title:string; p_body:string; p_priority:string; p_audience:AppRole[]; p_requires_acknowledgement:boolean; p_expires_at:string|null }; Returns:string };
       set_notification_preferences: { Args: { p_org:string; p_in_app:boolean; p_email:boolean; p_sms:boolean }; Returns:undefined };
       create_owned_school: { Args: { p_name:string; p_slug:string; p_campus_name:string; p_campus_code:string }; Returns:string };
+      platform_create_school: { Args: { p_name:string; p_slug:string; p_campus_name:string; p_campus_code:string; p_owner_user:string; p_actor_user:string }; Returns:string };
       list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
     };
     Enums: { app_role: AppRole };

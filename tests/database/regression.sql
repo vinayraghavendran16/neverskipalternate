@@ -148,6 +148,13 @@ select pg_temp.reject($q$insert into public.timetable_entries(organization_id,cl
 insert into public.timetable_entries(organization_id,class_id,class_subject_id,weekday,period_number,starts_at,ends_at) values(pg_temp.id(10),pg_temp.id(70),pg_temp.id(90),1,1,'09:00','10:00');
 select pg_temp.reject($q$insert into public.timetable_entries(organization_id,class_id,class_subject_id,weekday,period_number,starts_at,ends_at) values(pg_temp.id(10),pg_temp.id(70),pg_temp.id(90),1,2,'09:30','10:30')$q$,'overlapping timetable periods rejected');
 reset role;
+select pg_temp.assert_true(not has_function_privilege('authenticated','public.platform_create_school(text,text,text,text,uuid,uuid)','execute'),'school members cannot call platform provisioning RPC');
+select pg_temp.assert_true(has_function_privilege('service_role','public.platform_create_school(text,text,text,text,uuid,uuid)','execute'),'trusted service role can call platform provisioning RPC');
+set local role service_role;
+select public.platform_create_school('Platform School','platform-school','Main Branch','PB',pg_temp.id(6),pg_temp.id(1));
+reset role;
+select pg_temp.assert_true((select count(*)=1 from public.organizations where slug='platform-school'),'platform provisioning creates a tenant atomically');
+select pg_temp.assert_true((select count(*)=1 from public.memberships where organization_id=(select id from public.organizations where slug='platform-school') and user_id=pg_temp.id(6) and role='owner'),'platform provisioning grants the nominated owner');
 set local role anon;
 select pg_temp.assert_true(public.health_check(),'anonymous health probe confirms connectivity without tenant data');
 rollback;

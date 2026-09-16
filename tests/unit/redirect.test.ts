@@ -4,6 +4,8 @@ import { safeNextPath } from "../../lib/auth/redirect.ts";
 
 test("keeps local dashboard paths and their query strings", () => {
   assert.equal(safeNextPath("/dashboard/attendance?id=1"), "/dashboard/attendance?id=1");
+  assert.equal(safeNextPath("/auth/complete"), "/auth/complete");
+  assert.equal(safeNextPath("/platform"), "/platform");
 });
 
 test("rejects external, protocol-relative, encoded, and non-dashboard redirects", () => {

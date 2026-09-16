@@ -13,6 +13,7 @@ const workflows = [
 ];
 
 const releases = [
+  ["Identity & access", "Platform tenant provisioning, guided owner setup, invitation password completion, People-record linking, family accounts, and an in-product role guide."],
   ["Release readiness", "Full workflow UAT, responsive fixes, faster shared navigation, accessible labels, in-product guidance and verified release evidence."],
   ["Phase 8", "Persistent notification inbox, unread counts, consent preferences and reliable announcement delivery records."],
   ["Phase 7", "Health checks, redacted incident capture, administrator triage and release identity."],
