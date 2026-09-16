@@ -13,6 +13,7 @@ const workflows = [
 ];
 
 const releases = [
+  ["Platform portfolio onboarding", "Multi-branch provisioning, multi-owner invitations, school branding, exact locations, portfolio metrics, ARR and school-level drilldowns."],
   ["Owner invitation routing", "Invitation fragments are safely established in-browser, expired links show a recovery path, invitations can be resent, and school owners land in their assigned tenant."],
   ["Identity & access", "Platform tenant provisioning, guided owner setup, invitation password completion, People-record linking, family accounts, and an in-product role guide."],
   ["Release readiness", "Full workflow UAT, responsive fixes, faster shared navigation, accessible labels, in-product guidance and verified release evidence."],

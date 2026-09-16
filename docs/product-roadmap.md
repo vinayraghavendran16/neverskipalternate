@@ -2,6 +2,7 @@
 
 ## Delivered
 
+- Platform portfolio: rich school profiles, white-label logos, bulk branch onboarding, multiple owners, exact locations, tenant drilldowns and ARR reporting.
 - Phases 1–4: tenancy, people, academics, attendance, teacher daily work, homework and assessments.
 - Phase 5: family learning, announcements, leave approvals, homework responses and fee visibility.
 - Phase 6: school calendar, transport operations, attendance-correction review and guided assessment setup.

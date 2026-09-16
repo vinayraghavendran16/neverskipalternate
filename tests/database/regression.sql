@@ -155,6 +155,25 @@ select public.platform_create_school('Platform School','platform-school','Main B
 reset role;
 select pg_temp.assert_true((select count(*)=1 from public.organizations where slug='platform-school'),'platform provisioning creates a tenant atomically');
 select pg_temp.assert_true((select count(*)=1 from public.memberships where organization_id=(select id from public.organizations where slug='platform-school') and user_id=pg_temp.id(6) and role='owner'),'platform provisioning grants the nominated owner');
+select pg_temp.assert_true(not has_function_privilege('authenticated','public.platform_create_school_portfolio(text,text,text,text,text,text,text,integer,text,text,text,text,jsonb,jsonb,text,text,numeric,numeric,text,date,date,integer,uuid)','execute'),'school members cannot call portfolio provisioning');
+set local role authenticated;
+select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
+select pg_temp.reject($q$select * from public.organization_commercials$q$,'commercial portfolio is hidden from school accounts');
+select pg_temp.reject($q$select * from public.organization_owner_profiles$q$,'platform owner directory is hidden from school accounts');
+reset role;
+set local role service_role;
+select public.platform_create_school_portfolio(
+  'Portfolio School','portfolio-school','Portfolio School Trust','https://portfolio.example','',
+  'day_school','CBSE',2001,'AFF-1','hello@portfolio.example','9999999999','Success Owner',
+  '[{"name":"Central Branch","code":"CENTRAL","address_line1":"1 School Road","city":"Bengaluru","state":"Karnataka","postal_code":"560001","country":"India","latitude":12.971599,"longitude":77.594566}]'::jsonb,
+  format('[{"user_id":"%s","job_title":"Trustee","phone":"9999999999","is_primary":true}]',pg_temp.id(5))::jsonb,
+  'Growth','monthly',10000,5000,'active','2026-09-01','2027-08-31',500,pg_temp.id(1)
+);
+reset role;
+select pg_temp.assert_true((select count(*)=1 from public.organizations where slug='portfolio-school' and website_url='https://portfolio.example'),'portfolio provisioning saves school identity');
+select pg_temp.assert_true((select count(*)=1 from public.campuses where organization_id=(select id from public.organizations where slug='portfolio-school') and city='Bengaluru'),'portfolio provisioning saves exact branch data');
+select pg_temp.assert_true((select recurring_amount=10000 and billing_cycle='monthly' from public.organization_commercials where organization_id=(select id from public.organizations where slug='portfolio-school')),'portfolio provisioning saves commercial terms');
+select pg_temp.assert_true((select count(*)=1 from public.organization_owner_profiles where organization_id=(select id from public.organizations where slug='portfolio-school') and is_primary),'portfolio provisioning saves accountable owners');
 set local role anon;
 select pg_temp.assert_true(public.health_check(),'anonymous health probe confirms connectivity without tenant data');
 rollback;

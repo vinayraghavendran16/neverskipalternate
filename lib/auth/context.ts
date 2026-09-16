@@ -9,6 +9,7 @@ export type UserContext = {
   fullName: string;
   organizationId: string;
   organizationName: string;
+  organizationLogoUrl: string | null;
   campusId: string | null;
   campusName: string | null;
   role: AppRole;
@@ -39,7 +40,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
 
   const [{ data: profile }, { data: organizations }, { data: campus }, unreadResult] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
-    supabase.from("organizations").select("id, name").in("id", organizationIds),
+    supabase.from("organizations").select("id, name, logo_url").in("id", organizationIds),
     membership.campus_id
       ? supabase.from("campuses").select("name").eq("id", membership.campus_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -53,6 +54,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
       .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
   ]);
   const organizationNames = new Map((organizations || []).map((entry) => [entry.id, entry.name]));
+  const organizationLogos = new Map((organizations || []).map((entry) => [entry.id, entry.logo_url]));
 
   return {
     userId: user.id,
@@ -60,6 +62,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     fullName: profile?.full_name || user.email?.split("@")[0] || "User",
     organizationId: membership.organization_id,
     organizationName: organizationNames.get(membership.organization_id) || "School",
+    organizationLogoUrl: organizationLogos.get(membership.organization_id) || null,
     campusId: membership.campus_id,
     campusName: campus?.name || null,
     role: membership.role as AppRole,

@@ -13,15 +13,27 @@ export type Database = {
         Relationships: [];
       };
       organizations: {
-        Row: { id: string; name: string; slug: string; status: string } & Timestamped;
-        Insert: { id?: string; name: string; slug: string; status?: string };
-        Update: { name?: string; slug?: string; status?: string };
+        Row: { id: string; name: string; slug: string; status: string; legal_name:string|null; website_url:string|null; logo_url:string|null; school_type:string; education_board:string|null; established_year:number|null; affiliation_number:string|null; primary_email:string|null; primary_phone:string|null; onboarding_stage:string; go_live_on:string|null; customer_success_owner:string|null } & Timestamped;
+        Insert: { id?: string; name: string; slug: string; status?: string; legal_name?:string|null; website_url?:string|null; logo_url?:string|null; school_type?:string; education_board?:string|null; established_year?:number|null; affiliation_number?:string|null; primary_email?:string|null; primary_phone?:string|null; onboarding_stage?:string; go_live_on?:string|null; customer_success_owner?:string|null };
+        Update: { name?: string; slug?: string; status?: string; legal_name?:string|null; website_url?:string|null; logo_url?:string|null; school_type?:string; education_board?:string|null; established_year?:number|null; affiliation_number?:string|null; primary_email?:string|null; primary_phone?:string|null; onboarding_stage?:string; go_live_on?:string|null; customer_success_owner?:string|null };
         Relationships: [];
       };
       campuses: {
-        Row: { id: string; organization_id: string; name: string; code: string; timezone: string } & Timestamped;
-        Insert: { id?: string; organization_id: string; name: string; code: string; timezone?: string };
-        Update: { name?: string; code?: string; timezone?: string };
+        Row: { id: string; organization_id: string; name: string; code: string; timezone: string; address_line1:string|null; address_line2:string|null; city:string|null; state:string|null; postal_code:string|null; country:string; latitude:number|null; longitude:number|null; email:string|null; phone:string|null; status:string } & Timestamped;
+        Insert: { id?: string; organization_id: string; name: string; code: string; timezone?: string; address_line1?:string|null; address_line2?:string|null; city?:string|null; state?:string|null; postal_code?:string|null; country?:string; latitude?:number|null; longitude?:number|null; email?:string|null; phone?:string|null; status?:string };
+        Update: { name?: string; code?: string; timezone?: string; address_line1?:string|null; address_line2?:string|null; city?:string|null; state?:string|null; postal_code?:string|null; country?:string; latitude?:number|null; longitude?:number|null; email?:string|null; phone?:string|null; status?:string };
+        Relationships: [];
+      };
+      organization_commercials: {
+        Row: { organization_id:string; plan_name:string; billing_cycle:string; recurring_amount:number; implementation_fee:number; currency:string; contract_status:string; contract_starts_on:string|null; contract_ends_on:string|null; licensed_students:number|null } & Timestamped;
+        Insert: { organization_id:string; plan_name?:string; billing_cycle?:string; recurring_amount?:number; implementation_fee?:number; currency?:string; contract_status?:string; contract_starts_on?:string|null; contract_ends_on?:string|null; licensed_students?:number|null };
+        Update: { plan_name?:string; billing_cycle?:string; recurring_amount?:number; implementation_fee?:number; currency?:string; contract_status?:string; contract_starts_on?:string|null; contract_ends_on?:string|null; licensed_students?:number|null };
+        Relationships: [];
+      };
+      organization_owner_profiles: {
+        Row: { membership_id:string; organization_id:string; user_id:string; job_title:string|null; phone:string|null; is_primary:boolean } & Timestamped;
+        Insert: { membership_id:string; organization_id:string; user_id:string; job_title?:string|null; phone?:string|null; is_primary?:boolean };
+        Update: { job_title?:string|null; phone?:string|null; is_primary?:boolean };
         Relationships: [];
       };
       academic_years: {
@@ -254,6 +266,7 @@ export type Database = {
       set_notification_preferences: { Args: { p_org:string; p_in_app:boolean; p_email:boolean; p_sms:boolean }; Returns:undefined };
       create_owned_school: { Args: { p_name:string; p_slug:string; p_campus_name:string; p_campus_code:string }; Returns:string };
       platform_create_school: { Args: { p_name:string; p_slug:string; p_campus_name:string; p_campus_code:string; p_owner_user:string; p_actor_user:string }; Returns:string };
+      platform_create_school_portfolio: { Args: { p_name:string; p_slug:string; p_legal_name:string; p_website_url:string; p_logo_url:string; p_school_type:string; p_education_board:string; p_established_year:number|null; p_affiliation_number:string; p_primary_email:string; p_primary_phone:string; p_customer_success_owner:string; p_branches:Json; p_owners:Json; p_plan_name:string; p_billing_cycle:string; p_recurring_amount:number; p_implementation_fee:number; p_contract_status:string; p_contract_starts_on:string|null; p_contract_ends_on:string|null; p_licensed_students:number|null; p_actor_user:string }; Returns:string };
       list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
     };
     Enums: { app_role: AppRole };
