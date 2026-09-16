@@ -231,6 +231,7 @@ export type Database = {
       record_fee_payment: { Args: { p_invoice: string; p_amount: number; p_method: string; p_reference?: string | null }; Returns: string };
       review_attendance_correction: { Args: { p_id:string; p_decision:string }; Returns:boolean };
       report_operational_incident: { Args: { p_fingerprint:string; p_route:string }; Returns:string };
+      health_check: { Args: Record<string,never>; Returns:boolean };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
