@@ -116,4 +116,7 @@ select pg_temp.assert_true(not has_function_privilege('anon','public.save_marks_
 select pg_temp.reject($q$insert into public.timetable_entries(organization_id,class_id,class_subject_id,weekday,period_number,starts_at,ends_at) values(pg_temp.id(10),pg_temp.id(71),pg_temp.id(90),1,1,'09:00','10:00')$q$,'mismatched timetable allocation rejected');
 insert into public.timetable_entries(organization_id,class_id,class_subject_id,weekday,period_number,starts_at,ends_at) values(pg_temp.id(10),pg_temp.id(70),pg_temp.id(90),1,1,'09:00','10:00');
 select pg_temp.reject($q$insert into public.timetable_entries(organization_id,class_id,class_subject_id,weekday,period_number,starts_at,ends_at) values(pg_temp.id(10),pg_temp.id(70),pg_temp.id(90),1,2,'09:30','10:30')$q$,'overlapping timetable periods rejected');
+reset role;
+set local role anon;
+select pg_temp.assert_true(public.health_check(),'anonymous health probe confirms connectivity without tenant data');
 rollback;
