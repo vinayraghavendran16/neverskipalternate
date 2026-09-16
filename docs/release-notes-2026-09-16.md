@@ -8,6 +8,7 @@
 - Added plan, contract, licensed capacity and annualized recurring revenue reporting.
 - Added platform KPIs and school drilldowns for branch, student, staff, teacher, owner and commercial detail.
 - Applied school branding in the assigned tenant shell while keeping provisioning controls platform-only.
+- Added platform-only management for existing tenants: profile/commercial updates, bulk branch expansion, branch location completion and multi-owner invitations.
 
 ## Release-readiness update
 

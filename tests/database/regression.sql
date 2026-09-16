@@ -174,6 +174,18 @@ select pg_temp.assert_true((select count(*)=1 from public.organizations where sl
 select pg_temp.assert_true((select count(*)=1 from public.campuses where organization_id=(select id from public.organizations where slug='portfolio-school') and city='Bengaluru'),'portfolio provisioning saves exact branch data');
 select pg_temp.assert_true((select recurring_amount=10000 and billing_cycle='monthly' from public.organization_commercials where organization_id=(select id from public.organizations where slug='portfolio-school')),'portfolio provisioning saves commercial terms');
 select pg_temp.assert_true((select count(*)=1 from public.organization_owner_profiles where organization_id=(select id from public.organizations where slug='portfolio-school') and is_primary),'portfolio provisioning saves accountable owners');
+select pg_temp.assert_true(not has_function_privilege('authenticated','public.platform_add_school_branches(uuid,jsonb,uuid)','execute'),'school members cannot call platform branch management');
+set local role service_role;
+select public.platform_update_school_portfolio(pg_temp.id(10),'https://updated.example','','boarding','CISCE',2002,'AFF-2','office@updated.example','8888888888','live','2026-09-16','CS Owner','Enterprise','annual',120000,10000,'active','2026-09-01','2027-08-31',800,pg_temp.id(1));
+select public.platform_add_school_branches(pg_temp.id(10),'[{"name":"North Branch","code":"NORTH","address_line1":"2 School Road","city":"Bengaluru","state":"Karnataka","country":"India"}]'::jsonb,pg_temp.id(1));
+select public.platform_update_school_branch(pg_temp.id(10),(select pg_temp.id(21)),'3 Updated Road','Mysuru','Karnataka','570001',12.3,76.6,'north@example.test','8888888888',pg_temp.id(1));
+select public.platform_add_school_owners(pg_temp.id(10),format('[{"user_id":"%s","job_title":"Director","phone":"7777777777","is_primary":false}]',pg_temp.id(4))::jsonb,pg_temp.id(1));
+reset role;
+select pg_temp.assert_true((select onboarding_stage='live' and website_url='https://updated.example' from public.organizations where id=pg_temp.id(10)),'platform can enrich an existing school profile');
+select pg_temp.assert_true((select recurring_amount=120000 and licensed_students=800 from public.organization_commercials where organization_id=pg_temp.id(10)),'platform can update existing school commercials atomically');
+select pg_temp.assert_true((select address_line1='3 Updated Road' and city='Mysuru' from public.campuses where id=pg_temp.id(21)),'platform can update branch locations');
+select pg_temp.assert_true((select count(*)=1 from public.campuses where organization_id=pg_temp.id(10) and code='NORTH'),'platform can add branches to an existing school');
+select pg_temp.assert_true((select count(*)=1 from public.organization_owner_profiles where organization_id=pg_temp.id(10) and user_id=pg_temp.id(4)),'platform can add accountable owners to an existing school');
 set local role anon;
 select pg_temp.assert_true(public.health_check(),'anonymous health probe confirms connectivity without tenant data');
 rollback;
