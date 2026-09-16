@@ -38,6 +38,8 @@ Forecasted ARR uses the current commercial assumption of ₹3,00,000 per non-del
 
 The portfolio includes a logo-led school gallery. Deleting a school is a controlled archive: it removes the tenant from live metrics and immediately blocks school access while retaining academic, finance and audit history. A platform owner can restore the school and its prior membership assignments.
 
+Each school portfolio has dedicated Overview, Metrics, School & commercials, Branches and Owners tabs. The Metrics tab uses one service-only database aggregate to report people, activated accounts, communications, delivery engagement, academic activity, attendance, fee collection, pending approvals, transport, incidents and audited workflow events without exposing the underlying cross-tenant tables.
+
 ## What established systems capture at this stage
 
 The next useful portfolio fields, based on official Indian school ERP material, are:
