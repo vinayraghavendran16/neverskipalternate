@@ -13,9 +13,9 @@ export type Database = {
         Relationships: [];
       };
       organizations: {
-        Row: { id: string; name: string; slug: string; status: string; legal_name:string|null; website_url:string|null; logo_url:string|null; school_type:string; education_board:string|null; established_year:number|null; affiliation_number:string|null; primary_email:string|null; primary_phone:string|null; onboarding_stage:string; go_live_on:string|null; customer_success_owner:string|null } & Timestamped;
+        Row: { id: string; name: string; slug: string; status: string; legal_name:string|null; website_url:string|null; logo_url:string|null; school_type:string; education_board:string|null; established_year:number|null; affiliation_number:string|null; primary_email:string|null; primary_phone:string|null; onboarding_stage:string; go_live_on:string|null; customer_success_owner:string|null; archived_at:string|null; archived_by:string|null; archive_reason:string|null; archived_previous_onboarding_stage:string|null } & Timestamped;
         Insert: { id?: string; name: string; slug: string; status?: string; legal_name?:string|null; website_url?:string|null; logo_url?:string|null; school_type?:string; education_board?:string|null; established_year?:number|null; affiliation_number?:string|null; primary_email?:string|null; primary_phone?:string|null; onboarding_stage?:string; go_live_on?:string|null; customer_success_owner?:string|null };
-        Update: { name?: string; slug?: string; status?: string; legal_name?:string|null; website_url?:string|null; logo_url?:string|null; school_type?:string; education_board?:string|null; established_year?:number|null; affiliation_number?:string|null; primary_email?:string|null; primary_phone?:string|null; onboarding_stage?:string; go_live_on?:string|null; customer_success_owner?:string|null };
+        Update: { name?: string; slug?: string; status?: string; legal_name?:string|null; website_url?:string|null; logo_url?:string|null; school_type?:string; education_board?:string|null; established_year?:number|null; affiliation_number?:string|null; primary_email?:string|null; primary_phone?:string|null; onboarding_stage?:string; go_live_on?:string|null; customer_success_owner?:string|null; archived_at?:string|null; archived_by?:string|null; archive_reason?:string|null; archived_previous_onboarding_stage?:string|null };
         Relationships: [];
       };
       campuses: {
@@ -271,6 +271,7 @@ export type Database = {
       platform_add_school_branches: { Args: { p_org:string; p_branches:Json; p_actor_user:string }; Returns:number };
       platform_update_school_branch: { Args: { p_org:string; p_branch:string; p_address_line1:string; p_city:string; p_state:string; p_postal_code:string; p_latitude:number|null; p_longitude:number|null; p_email:string; p_phone:string; p_actor_user:string }; Returns:boolean };
       platform_add_school_owners: { Args: { p_org:string; p_owners:Json; p_actor_user:string }; Returns:number };
+      platform_set_school_archived: { Args: { p_org:string; p_archived:boolean; p_reason:string; p_actor_user:string }; Returns:boolean };
       list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
     };
     Enums: { app_role: AppRole };

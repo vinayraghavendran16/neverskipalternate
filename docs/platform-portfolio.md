@@ -29,3 +29,26 @@ Open any school row to manage an existing tenant. The platform operator can upda
 ## Market-informed fields
 
 The model reflects capabilities consistently emphasized by Indian school ERP vendors: multi-campus aggregation, central student information, admissions and enrollment capacity, staff and payroll context, finance, transport, regulatory or board details, role-based dashboards, white-label branding, onboarding support and account ownership. Product work after this phase should add editable onboarding milestones, module entitlements, payment collection and renewal forecasting.
+
+## Commercial lifecycle and portfolio controls
+
+Forecasted ARR uses the current commercial assumption of ₹3,00,000 per non-deleted school per year, regardless of branch or student count. It stays separate from current ARR so pipeline value is never presented as contracted revenue.
+
+`trial` is the one-month free pilot state. The database sets recurring revenue to zero and calculates the end date as one calendar month after the start date. The dashboard separates active and expired pilots.
+
+The portfolio includes a logo-led school gallery. Deleting a school is a controlled archive: it removes the tenant from live metrics and immediately blocks school access while retaining academic, finance and audit history. A platform owner can restore the school and its prior membership assignments.
+
+## What established systems capture at this stage
+
+The next useful portfolio fields, based on official Indian school ERP material, are:
+
+- sales lifecycle: lead source, opportunity owner, expected close, probability, proposal and loss reason;
+- legal and compliance: trust or society, GSTIN, billing address, board affiliation expiry, required documents and data-processing agreement;
+- implementation: data-migration status, training sessions, module activation, launch checklist, risks and accountable customer-success manager;
+- commercial operations: quote, discount approval, invoice cadence, renewal date, collections status, payment history and expansion value;
+- product adoption: enabled modules, active users, login frequency, attendance, fees and communication usage, and support cases;
+- group governance: parent group, central office contacts, cross-school permissions and consolidated MIS.
+
+Fedena packages onboarding, data configuration, training, support, backups, modules and white-label options around a trial and subscription. Entab emphasizes multi-branch dashboards, centralized governance, finance, admissions CRM, implementation support and dedicated account management. MyClassboard spans admissions, academics, finance, HR, documents, safety, inventory and communication. Northstar should manage these as progressive onboarding sections with owners, due dates and completeness indicators rather than one oversized form.
+
+Sources: [Fedena pricing and onboarding](https://fedena.com/pricing-and-plans), [Fedena feature tour](https://fedena.com/feature-tour), [Entab One](https://www.entab.in/entab-one.html), [Entab multi-school case study](https://entab.in/entab_adityabirla_casestudy.html), and [MyClassboard school management](https://www.myclassboard.com/school-management-software/).
