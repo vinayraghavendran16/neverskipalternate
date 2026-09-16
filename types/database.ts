@@ -150,6 +150,24 @@ export type Database = {
         Update: { read_at?: string; acknowledged_at?: string | null };
         Relationships: [];
       };
+      notification_preferences: {
+        Row: { id:string; organization_id:string; user_id:string; channel:string; enabled:boolean; consented_at:string|null; consent_source:string; created_at:string; updated_at:string };
+        Insert: { id?:string; organization_id:string; user_id:string; channel:string; enabled:boolean; consented_at?:string|null; consent_source?:string };
+        Update: { enabled?:boolean; consented_at?:string|null; consent_source?:string };
+        Relationships: [];
+      };
+      notifications: {
+        Row: { id:string; organization_id:string; user_id:string; announcement_id:string|null; title:string; body:string; priority:string; href:string; in_app_enabled:boolean; read_at:string|null; expires_at:string|null; created_at:string };
+        Insert: { id?:string; organization_id:string; user_id:string; announcement_id?:string|null; title:string; body:string; priority?:string; href?:string; in_app_enabled?:boolean; read_at?:string|null; expires_at?:string|null; created_at?:string };
+        Update: { read_at?:string|null };
+        Relationships: [];
+      };
+      notification_deliveries: {
+        Row: { id:string; organization_id:string; notification_id:string; user_id:string; channel:string; status:string; attempts:number; next_attempt_at:string|null; provider_message_id:string|null; last_error_code:string|null; idempotency_key:string; delivered_at:string|null; created_at:string; updated_at:string };
+        Insert: { id?:string; organization_id:string; notification_id:string; user_id:string; channel:string; status:string; attempts?:number; next_attempt_at?:string|null; provider_message_id?:string|null; last_error_code?:string|null; idempotency_key:string; delivered_at?:string|null };
+        Update: never;
+        Relationships: [];
+      };
       leave_requests: {
         Row: { id: string; organization_id: string; student_id: string | null; staff_id: string | null; leave_type: string; starts_on: string; ends_on: string; reason: string; status: string; requested_by: string; reviewed_by: string | null; review_note: string | null; reviewed_at: string | null } & Timestamped;
         Insert: { id?: string; organization_id: string; student_id?: string | null; staff_id?: string | null; leave_type: string; starts_on: string; ends_on: string; reason: string; status?: string; requested_by: string; reviewed_by?: string | null; review_note?: string | null; reviewed_at?: string | null };
@@ -232,6 +250,8 @@ export type Database = {
       review_attendance_correction: { Args: { p_id:string; p_decision:string }; Returns:boolean };
       report_operational_incident: { Args: { p_fingerprint:string; p_route:string }; Returns:string };
       health_check: { Args: Record<string,never>; Returns:boolean };
+      create_announcement_with_notifications: { Args: { p_org:string; p_campus:string|null; p_title:string; p_body:string; p_priority:string; p_audience:AppRole[]; p_requires_acknowledgement:boolean; p_expires_at:string|null }; Returns:string };
+      set_notification_preferences: { Args: { p_org:string; p_in_app:boolean; p_email:boolean; p_sms:boolean }; Returns:undefined };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;

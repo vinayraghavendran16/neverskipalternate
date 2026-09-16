@@ -17,10 +17,10 @@ export async function createAnnouncement(_: CommunicationState, formData: FormDa
   if (!parsed.success) return { error: "Add a title, message, and at least one audience." };
   const expires = parsed.data.expires_at ? new Date(`${parsed.data.expires_at}T23:59:59+05:30`) : null;
   if (expires && (Number.isNaN(expires.getTime()) || expires <= new Date())) return { error: "Expiry must be a future date." };
-  const { error } = await supabase.from("announcements").insert({ organization_id: context.organizationId, campus_id: parsed.data.campus_id || null, title: parsed.data.title, body: parsed.data.body, priority: parsed.data.priority, audience: parsed.data.audience, requires_acknowledgement: formData.get("requires_acknowledgement") === "on", status: "published", published_at: new Date().toISOString(), expires_at: expires?.toISOString() || null, created_by: context.userId });
+  const { error } = await supabase.rpc("create_announcement_with_notifications", { p_org: context.organizationId, p_campus: parsed.data.campus_id || null, p_title: parsed.data.title, p_body: parsed.data.body, p_priority: parsed.data.priority, p_audience: parsed.data.audience, p_requires_acknowledgement: formData.get("requires_acknowledgement") === "on", p_expires_at: expires?.toISOString() || null });
   if (error) return { error: error.message };
-  revalidatePath("/dashboard"); revalidatePath("/dashboard/communication");
-  return { success: "Announcement published." };
+  revalidatePath("/dashboard"); revalidatePath("/dashboard/communication"); revalidatePath("/dashboard/notifications");
+  return { success: "Announcement published and notifications prepared." };
 }
 
 export async function acknowledgeAnnouncement(formData: FormData) {
