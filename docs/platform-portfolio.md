@@ -14,7 +14,7 @@ Commercial data includes plan, billing cycle, recurring amount, one-time impleme
 
 ## Portfolio reporting
 
-The platform dashboard reports active and live schools, branches, active students, active staff, teachers and ARR. School rows link to a drilldown with exact branch locations, branch-level headcount, school identity, owner accountability and contract detail.
+The platform dashboard reports active and live schools, branches, active students, active staff, teachers and ARR. Its full-width School portfolio, Branches, Owners, Commercials and Onboarding tabs separate the portfolio directories and setup workflow. School, branch, owner and commercial rows link directly to the relevant school drilldown tab.
 
 Teachers are counted from active staff records whose designation contains teacher, faculty or educator. This is based on the maintained staff directory rather than login accounts; schools can have teachers before issuing logins.
 
@@ -36,7 +36,7 @@ Forecasted ARR uses the current commercial assumption of ₹3,00,000 per non-del
 
 `trial` is the one-month free pilot state. The database sets recurring revenue to zero and calculates the end date as one calendar month after the start date. The dashboard separates active and expired pilots.
 
-The portfolio includes a logo-led school gallery. Deleting a school is a controlled archive: it removes the tenant from live metrics and immediately blocks school access while retaining academic, finance and audit history. A platform owner can restore the school and its prior membership assignments.
+The School portfolio tab includes a logo-led school gallery and deleted-school recovery. The Branches tab shows every campus and location, Owners shows access activation and invitation controls, Commercials shows revenue and renewal terms, and Onboarding contains the full-width school creation form, implementation pipeline and pilots. Deleting a school is a controlled archive: it removes the tenant from live metrics and immediately blocks school access while retaining academic, finance and audit history. A platform owner can restore the school and its prior membership assignments.
 
 Each school portfolio has dedicated Overview, Metrics, School & commercials, Branches and Owners tabs. The Metrics tab uses one service-only database aggregate to report people, activated accounts, communications, delivery engagement, academic activity, attendance, fee collection, pending approvals, transport, incidents and audited workflow events without exposing the underlying cross-tenant tables.
 
