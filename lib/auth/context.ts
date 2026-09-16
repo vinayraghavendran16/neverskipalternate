@@ -33,14 +33,23 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     .order("id");
 
   if (!memberships?.length) return null;
+  const organizationIds = [...new Set(memberships.map((entry) => entry.organization_id))];
+
+  const { data: activeOrganizations } = await supabase
+    .from("organizations")
+    .select("id, name, logo_url")
+    .in("id", organizationIds)
+    .eq("status", "active");
+  const activeIds = new Set((activeOrganizations || []).map((entry) => entry.id));
+  const activeMemberships = memberships.filter((entry) => activeIds.has(entry.organization_id));
+  if (!activeMemberships.length) return null;
   const cookieStore = await cookies();
   const requestedOrganization = cookieStore.get("northstar_active_organization")?.value;
-  const membership = memberships.find((entry) => entry.organization_id === requestedOrganization) || memberships[0];
-  const organizationIds = [...new Set(memberships.map((entry) => entry.organization_id))];
+  const membership = activeMemberships.find((entry) => entry.organization_id === requestedOrganization) || activeMemberships[0];
 
   const [{ data: profile }, { data: organizations }, { data: campus }, unreadResult] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
-    supabase.from("organizations").select("id, name, logo_url").in("id", organizationIds),
+    Promise.resolve({ data: activeOrganizations }),
     membership.campus_id
       ? supabase.from("campuses").select("name").eq("id", membership.campus_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -67,7 +76,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     campusName: campus?.name || null,
     role: membership.role as AppRole,
     unreadNotifications: unreadResult.count || 0,
-    availableOrganizations: memberships.map((entry) => ({
+    availableOrganizations: activeMemberships.map((entry) => ({
       id: entry.organization_id,
       name: organizationNames.get(entry.organization_id) || "School",
       role: entry.role as AppRole,
