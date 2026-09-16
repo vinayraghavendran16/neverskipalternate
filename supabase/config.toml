@@ -18,7 +18,7 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3000/auth/callback"]
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://localhost:3000/auth/complete"]
 enable_signup = false
 jwt_expiry = 3600
 

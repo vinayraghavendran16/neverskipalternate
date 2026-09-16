@@ -90,10 +90,10 @@ export async function inviteUser(formData: FormData) {
     if (!staff || staff.user_id) dashboardStatus("error", "Choose an unlinked staff record from this school.");
     if (campusId && staff.campus_id !== campusId) dashboardStatus("error", "The selected staff record belongs to a different branch.");
   }
-  let userId = "", invitedUser = false;
+  let userId = "", createdUser = false, invitationSent = false;
   try {
-    const account = await findOrInviteAuthUser(admin, { email: parsed.data.email, fullName: parsed.data.full_name, redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/auth/complete` });
-    userId = account.user.id; invitedUser = account.invited;
+    const account = await findOrInviteAuthUser(admin, { email: parsed.data.email, fullName: parsed.data.full_name, redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/complete` });
+    userId = account.user.id; createdUser = account.created; invitationSent = account.invitationSent;
   } catch { dashboardStatus("error", "The invitation could not be sent. Check Supabase email settings and retry."); }
 
   const { data: existingMemberships, error: lookupError } = await supabase.from("memberships").select("id, role").eq("organization_id", context.organizationId).eq("user_id", userId).order("created_at");
@@ -111,18 +111,18 @@ export async function inviteUser(formData: FormData) {
     membershipError = result.error;
   }
   if (membershipError) {
-    if (invitedUser) await admin.auth.admin.deleteUser(userId);
+    if (createdUser) await admin.auth.admin.deleteUser(userId);
     dashboardStatus("error", "The invitation was rolled back because school access could not be saved.");
   }
   if (parsed.data.staff_profile_id) {
     const { error } = await supabase.from("staff_profiles").update({ user_id: userId, email: parsed.data.email }).eq("id", parsed.data.staff_profile_id).eq("organization_id", context.organizationId).is("user_id", null);
     if (error) {
-      if (invitedUser) await admin.auth.admin.deleteUser(userId);
+      if (createdUser) await admin.auth.admin.deleteUser(userId);
       dashboardStatus("error", "Access was created, but the People record could not be linked. Review current access before retrying.");
     }
   }
   revalidatePath("/dashboard");
-  dashboardStatus("success", invitedUser ? `Invitation sent to ${parsed.data.email}.` : `${parsed.data.email} now has ${parsed.data.role} access.`);
+  dashboardStatus("success", invitationSent ? `Invitation sent to ${parsed.data.email}.` : `${parsed.data.email} now has ${parsed.data.role} access.`);
 }
 
 const portalSchema = z.object({
@@ -143,26 +143,26 @@ export async function invitePortalUser(formData: FormData) {
   const fullName = `${record.first_name} ${record.last_name || ""}`.trim();
   const admin = createAdminClient(), env = getPublicEnv();
   if (!admin || !env) dashboardStatus("error", "Invitations are not configured.");
-  let userId = "", invited = false;
+  let userId = "", createdUser = false, invitationSent = false;
   try {
-    const account = await findOrInviteAuthUser(admin, { email: parsed.data.email, fullName, redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/callback?next=/auth/complete` });
-    userId = account.user.id; invited = account.invited;
+    const account = await findOrInviteAuthUser(admin, { email: parsed.data.email, fullName, redirectTo: `${env.NEXT_PUBLIC_APP_URL}/auth/complete` });
+    userId = account.user.id; createdUser = account.created; invitationSent = account.invitationSent;
   } catch { dashboardStatus("error", "The invitation could not be sent."); }
   const { data: memberships, error: membershipLookupError } = await supabase.from("memberships").select("id,role").eq("organization_id", context.organizationId).eq("user_id", userId);
   if (membershipLookupError) dashboardStatus("error", "Existing access could not be checked.");
   if (memberships?.some((entry) => entry.role !== parsed.data.role)) {
-    if (invited) await admin.auth.admin.deleteUser(userId);
+    if (createdUser) await admin.auth.admin.deleteUser(userId);
     dashboardStatus("error", "This account already has a different role in this school. Use a separate email while multi-role access is pending.");
   }
   if (!memberships?.length) {
     const { error } = await supabase.from("memberships").insert({ organization_id: context.organizationId, user_id: userId, role: parsed.data.role, status: "active" });
-    if (error) { if (invited) await admin.auth.admin.deleteUser(userId); dashboardStatus("error", "The invitation was rolled back because access could not be saved."); }
+    if (error) { if (createdUser) await admin.auth.admin.deleteUser(userId); dashboardStatus("error", "The invitation was rolled back because access could not be saved."); }
   }
   const { error: linkError } = await supabase.from(table).update({ user_id: userId, email: parsed.data.email }).eq("id", parsed.data.record_id).eq("organization_id", context.organizationId).is("user_id", null);
   if (linkError) dashboardStatus("error", "Access exists, but the People record could not be linked. Review current access before retrying.");
   if (parsed.data.role === "parent") await supabase.from("guardian_relationships").update({ guardian_user_id: userId }).eq("guardian_id", parsed.data.record_id).eq("organization_id", context.organizationId);
   revalidatePath("/dashboard");
-  dashboardStatus("success", invited ? `Invitation sent to ${parsed.data.email}.` : `${parsed.data.email} is now linked to the ${parsed.data.role} record.`);
+  dashboardStatus("success", invitationSent ? `Invitation sent to ${parsed.data.email}.` : `${parsed.data.email} is now linked to the ${parsed.data.role} record.`);
 }
 
 const updateAccessSchema = z.object({ membership_id: z.string().uuid(), role: z.enum(accessRoles), campus_id: z.string().uuid().or(z.literal("")), status: z.enum(["active", "suspended"]) });

@@ -14,8 +14,15 @@ export async function findAuthUserByEmail(admin: SupabaseClient, email: string):
 
 export async function findOrInviteAuthUser(admin: SupabaseClient, input: { email: string; fullName: string; redirectTo: string }) {
   const existing = await findAuthUserByEmail(admin, input.email);
-  if (existing) return { user: existing, invited: false };
+  if (existing) {
+    if (!existing.email_confirmed_at) {
+      const { data, error } = await admin.auth.admin.inviteUserByEmail(input.email, { data: { full_name: input.fullName }, redirectTo: input.redirectTo });
+      if (error) throw new Error("INVITATION_FAILED");
+      return { user: data.user || existing, invitationSent: true, created: false };
+    }
+    return { user: existing, invitationSent: false, created: false };
+  }
   const { data, error } = await admin.auth.admin.inviteUserByEmail(input.email, { data: { full_name: input.fullName }, redirectTo: input.redirectTo });
   if (error || !data.user) throw new Error("INVITATION_FAILED");
-  return { user: data.user, invited: true };
+  return { user: data.user, invitationSent: true, created: true };
 }
