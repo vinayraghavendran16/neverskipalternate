@@ -6,13 +6,14 @@
 - Phase 5: family learning, announcements, leave approvals, homework responses and fee visibility.
 - Phase 6: school calendar, transport operations, attendance-correction review and guided assessment setup.
 - Phase 7: production health endpoint, redacted incident capture, administrator triage and release readiness.
+- Phase 8: persistent notification inbox, unread indicators, channel consent, atomic announcement fan-out and delivery receipts. Email and SMS provider sending remains disabled until credentials and a provider adapter are approved.
 
 ## Prioritized next
 
-1. Consent-based email, SMS and app notification delivery with retries and delivery receipts.
-2. Payment gateway orders, signed webhooks, idempotent settlement, reconciliation and refunds.
-3. Offline attendance and teacher-work queues with conflict handling.
-4. Admissions, document verification and enrollment conversion.
+1. Payment gateway orders, signed webhooks, idempotent settlement, reconciliation and refunds.
+2. Offline attendance and teacher-work queues with conflict handling.
+3. Admissions, document verification and enrollment conversion.
+4. Email and SMS provider adapters with credential isolation, retry workers and cost controls.
 
 ## Parked
 
