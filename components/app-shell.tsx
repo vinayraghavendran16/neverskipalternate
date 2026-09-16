@@ -22,7 +22,7 @@ export function AppShell({ context, children, activePath = "/dashboard", pageTit
     <div className="shell">
       <a className="skip-link" href="#main-content">Skip to content</a>
       <aside className="sidebar">
-        <div className="brand"><span className="brand-mark"><i /><i /><i /></span><span>Northstar</span></div>
+        <div className="brand">{context.organizationLogoUrl?<span className="tenant-brand-logo" style={{backgroundImage:`url(${context.organizationLogoUrl})`}}/>:<span className="brand-mark"><i /><i /><i /></span>}<span>{context.organizationName}</span></div>
         <nav aria-label="Main navigation">{visibleNav.map((item, index) => item.length === 1 ? <div className="nav-label" key={`${item[0]}-${index}`}>{item[0]}</div> : <Link className={`nav-item ${item[0] === activePath ? "active" : ""}`} href={item[0]} aria-label={`${item[2]}${planned.has(item[0]) ? " (unavailable)" : ""}`} aria-current={item[0] === activePath ? "page" : undefined} title={item[2]} key={`${item[2]}-${index}`}><span className="nav-icon">{item[1]}</span><span>{item[2]}{planned.has(item[0]) && <small className="nav-unavailable">Unavailable</small>}</span></Link>)}</nav>
         <div className="sidebar-footer">
           <div className="tenant-chip"><span className="tenant-avatar">{context.organizationName.slice(0, 2).toUpperCase()}</span><div><b>{context.organizationName}</b><small>{context.campusName || "All campuses"}</small></div></div>

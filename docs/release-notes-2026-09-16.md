@@ -1,5 +1,14 @@
 # Northstar release notes — 16 September 2026
 
+## Platform portfolio onboarding
+
+- Added multi-branch school provisioning with exact addresses, optional map coordinates, and branch contacts.
+- Added multi-owner invitation and a platform-only owner directory with activation state and accountable-contact metadata.
+- Added school websites, public tenant logos, board/type details, affiliation data, onboarding stage and customer-success ownership.
+- Added plan, contract, licensed capacity and annualized recurring revenue reporting.
+- Added platform KPIs and school drilldowns for branch, student, staff, teacher, owner and commercial detail.
+- Applied school branding in the assigned tenant shell while keeping provisioning controls platform-only.
+
 ## Release-readiness update
 
 This update completes a product-wide audit of the currently delivered Phase 1–8 workflows.
