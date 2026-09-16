@@ -11,6 +11,7 @@ export type UserContext = {
   campusId: string | null;
   campusName: string | null;
   role: AppRole;
+  unreadNotifications: number;
 };
 
 export const getUserContext = cache(async (): Promise<UserContext | null> => {
@@ -32,12 +33,20 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
 
   if (!membership) return null;
 
-  const [{ data: profile }, { data: organization }, { data: campus }] = await Promise.all([
+  const [{ data: profile }, { data: organization }, { data: campus }, unreadResult] = await Promise.all([
     supabase.from("profiles").select("full_name").eq("id", user.id).maybeSingle(),
     supabase.from("organizations").select("name").eq("id", membership.organization_id).maybeSingle(),
     membership.campus_id
       ? supabase.from("campuses").select("name").eq("id", membership.campus_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase
+      .from("notifications")
+      .select("id", { count: "exact", head: true })
+      .eq("organization_id", membership.organization_id)
+      .eq("user_id", user.id)
+      .eq("in_app_enabled", true)
+      .is("read_at", null)
+      .or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`),
   ]);
 
   return {
@@ -49,6 +58,7 @@ export const getUserContext = cache(async (): Promise<UserContext | null> => {
     campusId: membership.campus_id,
     campusName: campus?.name || null,
     role: membership.role as AppRole,
+    unreadNotifications: unreadResult.count || 0,
   };
 });
 

@@ -2,22 +2,20 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { UserContext } from "@/lib/auth/context";
 import { logout } from "@/app/login/actions";
-import { createClient } from "@/lib/supabase/server";
 
 const nav = [
   ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/teacher", "◈", "Teacher Today"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"], ["/dashboard/homework", "↗", "Homework"], ["/dashboard/assessments", "▤", "Assessments"],
   ["EXPERIENCE"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Communication"], ["/dashboard/notifications", "●", "Notifications"],
   ["OPERATIONS"], ["/dashboard/approvals", "✓", "Approvals"], ["/dashboard/finance", "₹", "Finance"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/operations", "◌", "System health"],
+  ["HELP"], ["/dashboard/help", "?", "Help & releases"],
 ];
 
-export async function AppShell({ context, children, activePath = "/dashboard", pageTitle = "Command center" }: { context: UserContext; children: ReactNode; activePath?: string; pageTitle?: string }) {
+export function AppShell({ context, children, activePath = "/dashboard", pageTitle = "Command center" }: { context: UserContext; children: ReactNode; activePath?: string; pageTitle?: string }) {
   const family = context.role === "parent" || context.role === "student";
-  const visibleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/notifications", "●", "Notifications"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/people", "◉", "My records"]] : ["owner","administrator"].includes(context.role) ? nav : nav.filter((item)=>item[0]!=="/dashboard/operations");
+  const visibleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/notifications", "●", "Notifications"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/people", "◉", "My records"], ["HELP"], ["/dashboard/help", "?", "Help & releases"]] : ["owner","administrator"].includes(context.role) ? nav : nav.filter((item)=>item[0]!=="/dashboard/operations");
   const planned = new Set<string>();
   const initials = context.fullName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-  const supabase=await createClient();
-  const unreadResult=supabase?await supabase.from("notifications").select("id",{count:"exact",head:true}).eq("organization_id",context.organizationId).eq("user_id",context.userId).eq("in_app_enabled",true).is("read_at",null).or(`expires_at.is.null,expires_at.gt.${new Date().toISOString()}`):null;
-  const unread=unreadResult?.count||0;
+  const unread=context.unreadNotifications;
   return (
     <div className="shell">
       <a className="skip-link" href="#main-content">Skip to content</a>

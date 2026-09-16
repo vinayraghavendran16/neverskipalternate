@@ -39,8 +39,8 @@ a { color: inherit; text-decoration: none; }
 .login-form { width: min(430px,100%); display: grid; gap: 22px; }
 .login-form h2 { margin: 8px 0 6px; font-size: 34px; letter-spacing: -.045em; }
 .login-form p { margin: 0; color: var(--muted); font-size: 14px; }
-.field { display: grid; gap: 8px; font-size: 12px; font-weight: 700; }
-.field input { width: 100%; height: 48px; padding: 0 14px; color: var(--ink); background: white; border: 1px solid #cfd6cf; border-radius: 10px; outline: none; }
+.field { display: grid; min-width: 0; gap: 8px; font-size: 12px; font-weight: 700; }
+.field input { width: 100%; max-width: 100%; min-width: 0; height: 48px; padding: 0 14px; color: var(--ink); background: white; border: 1px solid #cfd6cf; border-radius: 10px; outline: none; }
 .field input:focus { border-color: var(--green-2); box-shadow: 0 0 0 3px rgba(38,118,92,.12); }
 .primary { min-height: 48px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border: 0; border-radius: 10px; color: white; background: var(--green); font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(22,78,60,.18); }
 .primary:disabled { opacity: .55; cursor: wait; }
@@ -118,6 +118,8 @@ a { color: inherit; text-decoration: none; }
   .sidebar .brand { padding-left: 16px; }
   .nav-item { justify-content: center; padding: 0; }
   .tenant-chip { display: block; padding: 10px 11px; }
+  .signout { width: 100%; padding: 0; overflow: hidden; font-size: 0; text-align: center; }
+  .signout::before { content: "↪"; font-size: 18px; }
   .main { width: calc(100% - 78px); margin-left: 78px; }
   .metrics { grid-template-columns: repeat(2,1fr); }
   .grid { grid-template-columns: 1fr; }
@@ -138,7 +140,7 @@ a { color: inherit; text-decoration: none; }
 /* Phase 2: People management */
 button, select, textarea { font: inherit; }
 .field em { margin-left: 3px; color: var(--danger); font-style: normal; }
-.field select, .field textarea { width: 100%; padding: 0 14px; color: var(--ink); background: white; border: 1px solid #cfd6cf; border-radius: 10px; outline: none; }
+.field select, .field textarea { width: 100%; max-width: 100%; min-width: 0; padding: 0 14px; color: var(--ink); background: white; border: 1px solid #cfd6cf; border-radius: 10px; outline: none; }
 .field select { height: 48px; }
 .field textarea { padding-top: 12px; resize: vertical; }
 .field select:focus, .field textarea:focus { border-color: var(--green-2); box-shadow: 0 0 0 3px rgba(38,118,92,.12); }
@@ -277,6 +279,8 @@ button, select, textarea { font: inherit; }
 .inline-form, .stack-form, .enrollment-form { display: grid; gap: 12px; }
 .inline-form { grid-template-columns: minmax(0,1fr) minmax(0,1fr) auto; align-items: end; }
 .inline-form .form-error, .inline-form .form-success { grid-column: 1 / -1; }
+.academic-side .inline-form { grid-template-columns: 1fr; }
+.academic-side .inline-form .form-error, .academic-side .inline-form .form-success { grid-column: 1; }
 .mini-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .roster-list { max-height: 480px; padding: 12px 18px; overflow-y: auto; }
 .roster-list > div { min-height: 48px; display: grid; grid-template-columns: 30px 1fr auto; gap: 10px; align-items: center; border-bottom: 1px solid #edf0eb; }
@@ -432,8 +436,9 @@ button, select, textarea { font: inherit; }
 .diary-title-row { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
 .reuse-button { height: 48px; }
 .form-button-row { display: flex; justify-content: flex-end; gap: 8px; }
-.form-two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.form-three { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+.form-two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+.form-three { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 10px; }
+.form-two > *, .form-three > *, .workflow-layout > * { min-width: 0; }
 .compact-number { max-width: 220px; }
 .class-picker { margin: 0; padding: 12px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; border: 1px solid var(--line); border-radius: 10px; }
 .class-picker legend { padding: 0 6px; color: var(--muted); font-size: 9px; font-weight: 800; }
@@ -539,7 +544,8 @@ button, .secondary, .primary, .row-link { min-height: 44px; }
  .nav-item span:last-child { display: block; }
  .sidebar-footer { margin-top: 8px; display: block; }
  .tenant-chip { display: none; }
- .signout { width: auto; }
+ .signout { width: auto; padding: 0 12px; font-size: inherit; }
+ .signout::before { content: none; }
  .shell { display: block; }
  .topbar { position: static; }
  .content { padding-top: 24px; }
@@ -553,7 +559,7 @@ button, .secondary, .primary, .row-link { min-height: 44px; }
 .workflow-layout { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(340px,.75fr); gap:18px; align-items:start; }
 .workflow-single { grid-template-columns:minmax(0,900px); }
 .workflow-form { display:grid; gap:14px; }
-.field select, .field textarea { width:100%; padding:12px 14px; color:var(--ink); background:white; border:1px solid #cfd6cf; border-radius:10px; outline:none; }
+.field select, .field textarea { width:100%; max-width:100%; min-width:0; padding:12px 14px; color:var(--ink); background:white; border:1px solid #cfd6cf; border-radius:10px; outline:none; }
 .field select { height:48px; }
 .field textarea { resize:vertical; line-height:1.5; }
 .field select:focus, .field textarea:focus { border-color:var(--green-2); box-shadow:0 0 0 3px rgba(38,118,92,.12); }
@@ -688,3 +694,6 @@ button, .secondary, .primary, .row-link { min-height: 44px; }
 .topbar-actions{display:flex;align-items:center;gap:16px}.notification-button{width:36px;height:36px;display:grid;place-items:center;position:relative;border:1px solid var(--line);border-radius:10px;color:var(--green);background:white;font-size:9px}.notification-button:hover{border-color:var(--green-2)}.notification-button b{min-width:17px;height:17px;padding:0 4px;display:grid;place-items:center;position:absolute;top:-6px;right:-7px;border:2px solid #f6f7f2;border-radius:20px;color:white;background:var(--danger);font-size:8px}
 .notification-list{padding:8px 18px;display:grid}.notification-row{padding:18px 2px;display:grid;grid-template-columns:36px 1fr;gap:12px;border-bottom:1px solid #edf0eb}.notification-row:last-child{border-bottom:0}.notification-unread{background:linear-gradient(90deg,rgba(215,232,223,.42),transparent)}.notification-symbol{width:34px;height:34px;display:grid;place-items:center;border-radius:9px;color:var(--green);background:var(--mint);font-size:9px}.notification-meta{display:flex;align-items:center;justify-content:space-between;gap:10px}.notification-meta time{color:var(--muted);font-size:9px}.notification-row h3{margin:10px 0 5px;font-size:15px}.notification-row p{margin:0;color:var(--muted);white-space:pre-wrap;line-height:1.55;font-size:12px}.notification-actions{margin-top:12px;display:flex;gap:7px}.notification-actions .secondary{min-height:34px}.preference-form{display:grid;gap:10px}.preference-form>label{padding:12px;display:grid;grid-template-columns:20px 1fr;gap:9px;align-items:start;border:1px solid var(--line);border-radius:9px;background:#fafbf8}.preference-form input{margin-top:2px;accent-color:var(--green)}.preference-form b,.preference-form small{display:block}.preference-form b{font-size:11px}.preference-form small{margin-top:3px;color:var(--muted);line-height:1.4;font-size:9px}.provider-note{margin:2px 0;padding:11px;color:#765e16;background:#fff6db;border-radius:8px;line-height:1.5;font-size:9px}.delivery-metrics{margin-bottom:18px}
 @media(max-width:620px){.user>span:last-child{display:none}.topbar-actions{gap:8px}.notification-row{grid-template-columns:30px 1fr}.notification-symbol{width:28px;height:28px}.notification-actions{align-items:stretch;flex-direction:column}.notification-actions form,.notification-actions button,.notification-actions a{width:100%}}
+
+/* Release readiness: in-product guidance and release evidence */
+.help-callout{margin-bottom:18px;padding:22px;display:flex;align-items:center;justify-content:space-between;gap:24px;background:linear-gradient(135deg,#fff 0%,#edf7f1 100%)}.help-callout h2{margin:12px 0 6px;font-size:20px}.help-callout p{max-width:760px;margin:0;color:var(--muted);font-size:12px;line-height:1.6}.help-callout .primary{flex:none}.help-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:18px;align-items:start}.guide-list{padding:8px 18px;display:grid}.guide-list>a{min-height:84px;padding:14px 4px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #edf0eb}.guide-list>a:last-child{border-bottom:0}.guide-list h3,.release-list h3,.roadmap-list h3{margin:0;font-size:13px}.guide-list p,.release-list p,.roadmap-list p{margin:5px 0;color:var(--muted);font-size:11px;line-height:1.5}.guide-list small{color:var(--green-2);font-size:9px;font-weight:800}.guide-list>a>span{color:var(--green-2);font-size:18px}.help-details{padding:8px 18px}.help-details details{padding:14px 2px;border-bottom:1px solid #edf0eb}.help-details details:last-child{border-bottom:0}.help-details summary{cursor:pointer;font-size:11px;font-weight:800}.help-details p,.help-details ol{margin:10px 0 0;color:var(--muted);font-size:10px;line-height:1.7}.help-details ol{padding-left:18px}.help-section{margin-top:18px}.release-list{padding:10px 20px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}.release-list article{min-height:88px;padding:15px 0;display:grid;grid-template-columns:34px 1fr;gap:12px;align-items:start;border-bottom:1px solid #edf0eb}.roadmap-list{padding:10px 20px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}.roadmap-list article{padding:18px 0;display:grid;grid-template-columns:42px 1fr;gap:12px;border-bottom:1px solid #edf0eb}.roadmap-list article>b{width:36px;height:36px;display:grid;place-items:center;border-radius:9px;color:var(--green);background:var(--mint);font-size:10px}.parked-note{margin:0;padding:16px 20px;color:#665319;background:#fff6db;font-size:10px;line-height:1.6}.parked-note b{color:#4f4116}@media(max-width:900px){.help-grid{grid-template-columns:1fr}.release-list,.roadmap-list{grid-template-columns:1fr}}@media(max-width:620px){.help-callout{align-items:stretch;flex-direction:column}.help-callout .primary{width:100%}.release-list,.roadmap-list{padding:8px 14px}}

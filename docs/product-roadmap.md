@@ -10,10 +10,11 @@
 
 ## Prioritized next
 
-1. Payment gateway orders, signed webhooks, idempotent settlement, reconciliation and refunds.
-2. Offline attendance and teacher-work queues with conflict handling.
-3. Admissions, document verification and enrollment conversion.
-4. Email and SMS provider adapters with credential isolation, retry workers and cost controls.
+1. Phase 9: payment gateway orders, signed webhooks, idempotent settlement, reconciliation and refunds.
+2. Phase 10: offline attendance and teacher-work queues with conflict handling.
+3. Phase 11: admissions, document verification and enrollment conversion.
+4. Phase 12: report cards, transcripts, progress analysis and exportable school reports.
+5. Email and SMS provider adapters with credential isolation, retry workers and cost controls.
 
 ## Parked
 
