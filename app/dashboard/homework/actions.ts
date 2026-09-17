@@ -34,7 +34,7 @@ export async function createHomework(_: HomeworkActionState, formData: FormData)
     p_instructions: parsed.data.instructions, p_due: dueAt.toISOString(),
     p_minutes: parsed.data.estimated_minutes ?? null, p_publish: published, p_classes: classIds,
   });
-  if (error) return { error: error.message };
+  if (error) return { error: "Homework could not be saved. Refresh and try again." };
   await writeAuditEvent({ organizationId: context.organizationId, action: published ? "homework.published" : "homework.draft_created", entityType: "homework", entityId: homeworkId!, metadata: { classes: classIds.length, subject_id: parsed.data.subject_id } });
   revalidatePath("/dashboard"); revalidatePath("/dashboard/teacher"); revalidatePath("/dashboard/homework");
   return { success: published ? `Homework published to ${classIds.length} class${classIds.length === 1 ? "" : "es"}.` : "Homework draft saved." };
@@ -46,6 +46,6 @@ export async function reviewHomeworkSubmission(_: HomeworkActionState, formData:
   const id = String(formData.get("submission_id") || ""), status = String(formData.get("status") || ""), feedback = String(formData.get("feedback") || "").trim();
   if (!databaseId.safeParse(id).success || !["returned","completed"].includes(status) || feedback.length > 2000) return { error: "Choose a review status and keep feedback under 2,000 characters." };
   const { error } = await supabase.from("homework_submissions").update({ status, feedback: feedback || null, reviewed_by: context.userId, reviewed_at: new Date().toISOString() }).eq("id", id).eq("organization_id", context.organizationId);
-  if (error) return { error: error.message };
+  if (error) return { error: "The review could not be saved. Refresh and try again." };
   const homeworkId = String(formData.get("homework_id") || ""); revalidatePath(`/dashboard/homework/${homeworkId}`); return { success: "Student response reviewed." };
 }

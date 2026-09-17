@@ -2,6 +2,11 @@
 
 ## Platform portfolio onboarding
 
+- Reorganized Homework into Assignments, Create and Review tabs with live completion, overdue and review signals.
+- Added class-prefilled homework and assessment creation, bulk class selection, student search and exception-first homework review.
+- Reorganized Assessments into Register, Create and Insights tabs with mark coverage and subject-level performance summaries.
+- Added mark-register search and filters, missing-result highlighting, live completeness counts and a guarded publish-and-lock step.
+- Replaced raw database errors in teaching actions with safe recovery messages and documented the workflow and current limits.
 - Rebuilt Academics as a teacher-first workspace with assigned-class visibility, setup readiness, full-width class tabs, bulk roster search and direct teaching actions.
 
 - Added multi-branch school provisioning with exact addresses, optional map coordinates, and branch contacts.
