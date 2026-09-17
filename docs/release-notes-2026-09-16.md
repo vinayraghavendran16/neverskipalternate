@@ -2,6 +2,11 @@
 
 ## Platform portfolio onboarding
 
+- Added distinct reporting dashboards for students, parents, teachers and school leaders, with role and branch scope enforced by existing tenant permissions.
+- Added reporting-period filters, school-to-class-to-student drill-down, subject results, attendance breakdowns, work completion, operational coverage and fee collection signals.
+- Added visible, deterministic attention rules and source links; empty evidence stays blank instead of appearing as zero performance.
+- Added a reporting methodology and international product benchmark in `docs/role-reporting-dashboards.md`.
+
 - Reorganized Homework into Assignments, Create and Review tabs with live completion, overdue and review signals.
 - Added class-prefilled homework and assessment creation, bulk class selection, student search and exception-first homework review.
 - Reorganized Assessments into Register, Create and Insights tabs with mark coverage and subject-level performance summaries.
