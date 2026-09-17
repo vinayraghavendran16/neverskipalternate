@@ -5,7 +5,7 @@ import { logout } from "@/app/login/actions";
 import { isPlatformOwnerEmail } from "@/lib/auth/platform";
 
 const nav = [
-  ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/teacher", "◈", "Teacher Today"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"], ["/dashboard/homework", "↗", "Homework"], ["/dashboard/assessments", "▤", "Assessments"],
+  ["WORKSPACE"], ["/dashboard", "⌂", "Command center"], ["/dashboard/teacher", "◈", "Teacher Today"], ["/dashboard/people", "◉", "People"], ["/dashboard/academics", "▦", "Academics"], ["/dashboard/attendance", "◫", "Attendance"], ["/dashboard/homework", "↗", "Homework"], ["/dashboard/assessments", "▤", "Assessments"], ["/dashboard/reports", "◩", "Reports"],
   ["EXPERIENCE"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Communication"], ["/dashboard/notifications", "●", "Notifications"],
   ["OPERATIONS"], ["/dashboard/approvals", "✓", "Approvals"], ["/dashboard/finance", "₹", "Finance"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/operations", "◌", "System health"],
   ["HELP"], ["/dashboard/access", "⌘", "Access & roles"], ["/dashboard/help", "?", "Help & releases"],
@@ -13,7 +13,7 @@ const nav = [
 
 export function AppShell({ context, children, activePath = "/dashboard", pageTitle = "Command center" }: { context: UserContext; children: ReactNode; activePath?: string; pageTitle?: string }) {
   const family = context.role === "parent" || context.role === "student";
-  const roleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/notifications", "●", "Notifications"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/people", "◉", "My records"], ["HELP"], ["/dashboard/access", "⌘", "Access & roles"], ["/dashboard/help", "?", "Help & releases"]] : ["owner","administrator"].includes(context.role) ? nav : nav.filter((item)=>item[0]!=="/dashboard/operations");
+  const roleNav = family ? [["MY SCHOOL"], ["/dashboard/learning", "◎", "My learning"], ["/dashboard/reports", "◩", context.role === "student" ? "My progress" : "Child reports"], ["/dashboard/calendar", "□", "Calendar"], ["/dashboard/communication", "◇", "Notices"], ["/dashboard/notifications", "●", "Notifications"], ["/dashboard/approvals", "✓", "Leave requests"], ["/dashboard/finance", "₹", "Fees"], ["/dashboard/transport", "⌖", "Transport"], ["/dashboard/people", "◉", "My records"], ["HELP"], ["/dashboard/access", "⌘", "Access & roles"], ["/dashboard/help", "?", "Help & releases"]] : ["owner","administrator"].includes(context.role) ? nav : nav.filter((item)=>item[0]!=="/dashboard/operations");
   const visibleNav = isPlatformOwnerEmail(context.email) ? [...roleNav, ["PLATFORM"], ["/platform", "◇", "School provisioning"]] : roleNav;
   const planned = new Set<string>();
   const initials = context.fullName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();

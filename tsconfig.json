@@ -38,6 +38,9 @@
   ],
   "exclude": [
     "node_modules",
-    "public/prototype"
+    "public/prototype",
+    "northstar-website",
+    "output",
+    "tmp"
   ]
 }
