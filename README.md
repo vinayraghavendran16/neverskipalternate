@@ -143,7 +143,7 @@ AUDIT_DATABASE_URL=postgresql://... CONFIRM_DISPOSABLE_DATABASE=yes npm run test
 5. Create the first owner through a controlled administration workflow.
 6. Verify RLS tests, backups, point-in-time recovery and audit access before onboarding a school.
 
-See [Architecture](docs/architecture.md), [Security](docs/security.md), the [Environment runbook](docs/environment-runbook.md), [Production operations](docs/operations.md), [Notification delivery](docs/notifications.md), the [Indian LMS workflow review](docs/india-lms-workflow-review-2026-09-15.md), the [release notes](docs/release-notes-2026-09-16.md), the [UAT findings](docs/uat-release-readiness-2026-09-16.md), and the [Product roadmap](docs/product-roadmap.md).
+See [Architecture](docs/architecture.md), [Security](docs/security.md), the [Environment runbook](docs/environment-runbook.md), [Production operations](docs/operations.md), [Notification delivery](docs/notifications.md), the [Indian LMS workflow review](docs/india-lms-workflow-review-2026-09-15.md), the [Homework and assessments workspace](docs/homework-assessments-workspace.md), the [release notes](docs/release-notes-2026-09-16.md), the [UAT findings](docs/uat-release-readiness-2026-09-16.md), and the [Product roadmap](docs/product-roadmap.md).
 
 ## Repository structure
 

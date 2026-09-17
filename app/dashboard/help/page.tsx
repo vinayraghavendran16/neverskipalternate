@@ -13,6 +13,7 @@ const workflows = [
 ];
 
 const releases = [
+  ["Homework and assessment workspace", "Focused assignment, creation, review and insight tabs; class-prefilled actions; completion signals; searchable review queues; safer bulk marks entry and publish readiness."],
   ["Teacher-first academics", "Role-aware class workspaces, class readiness, focused roster, subject and timetable tabs, bulk roster search, and one-click teaching actions."],
   ["School portfolio operations", "Dedicated overview, metrics, school and commercials, branches and owners tabs, with school-level people, communication, academic, finance and operations KPIs."],
   ["Platform portfolio onboarding", "Multi-branch provisioning, multi-owner invitations, school branding, exact locations, portfolio metrics, ARR and school-level drilldowns."],
@@ -46,7 +47,8 @@ export default async function HelpPage() {
       <section className="card"><header className="card-header"><div><h2>Workflow guide</h2><p>Start from the workflow that matches your role.</p></div></header><div className="guide-list">{workflows.map(item=><Link href={item.href} key={item.title}><div><h3>{item.title}</h3><p>{item.detail}</p><small>{item.roles}</small></div><span aria-hidden="true">→</span></Link>)}</div></section>
       <aside className="card"><header className="card-header"><div><h2>Operating guidance</h2><p>Short answers for common decisions.</p></div></header><div className="help-details">
         <details><summary>How should a new school be set up?</summary><ol><li>Add the campus and active academic year.</li><li>Add staff, students and guardians.</li><li>Create classes and subjects.</li><li>Enroll students and allocate teachers.</li><li>Publish the timetable before daily work begins.</li></ol></details>
-        <details><summary>When can an assessment be created?</summary><p>The class needs an active subject allocation with a teacher. Open Academics, select the class, then allocate the subject and teacher.</p></details>
+        <details><summary>When can an assessment be created?</summary><p>The class needs an active subject allocation with a teacher. Open Academics, select the class, then choose Create assessment. The class context is carried into the assessment workspace.</p></details>
+        <details><summary>How should homework be reviewed?</summary><p>Open Homework and choose Review. New submissions appear before returned work. Filter by status or search for a student, add feedback, then accept the work or return it for revision.</p></details>
         <details><summary>What happens when a workflow fails?</summary><p>Retry once. Administrators can check System health for a safe incident fingerprint and use the timestamp to find the matching Vercel log.</p></details>
         <details><summary>How is school data protected?</summary><p>Every exposed table uses tenant-aware row-level security. Private records stay behind authentication, role checks and audited server actions.</p></details>
         <details><summary>Which messaging channels are active?</summary><p>In-app notifications are active. Email and SMS preferences are stored, while external sending remains disabled until a provider is configured.</p></details>
