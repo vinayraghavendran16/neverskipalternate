@@ -74,3 +74,4 @@ This update completes a product-wide audit of the currently delivered Phase 1–
 - Removed tenant creation from the school-owner Command Centre and revoked the legacy authenticated provisioning function. New schools remain exclusive to the allowlisted platform console.
 - Expanded the isolated authorization suite to cover platform operator, school owner, administrator, principal, teacher, staff, parent, student and cross-tenant access.
 - Added the full MVP system status, dependencies and decision register in `docs/mvp-uat-release-gate-2026-09-17.md`.
+- Repaired the production school-access directory so hosted authentication email values match the function's declared API type.
