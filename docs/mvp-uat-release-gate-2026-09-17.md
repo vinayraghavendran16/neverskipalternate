@@ -2,14 +2,14 @@
 
 **Audit date:** 17 September 2026
 
-**Candidate branch:** `codex/formal-academic-records`
+**Production release:** `d42eb8ef6920`
 **Scope:** all delivered platform, school, teaching, family and operations workflows
 
 ## Release decision
 
-**Code and database gate: PASS. Production promotion remains conditional on applying the new database migration and completing the post-deployment signed-in route sweep.**
+**MVP release gate: PASS. The database migrations are applied, production is healthy and the signed-in owner route sweep is complete.**
 
-The candidate passes lint, strict TypeScript, 22 unit tests, the optimized production build and a clean disposable PostgreSQL regression. The database suite exercises platform provisioning, tenant isolation and owner, administrator, principal, teacher, staff, parent and student boundaries. No environment secret is stored in the repository or this report.
+The release passes lint, strict TypeScript, 22 unit tests, the optimized production build and a clean disposable PostgreSQL regression. The database suite exercises platform provisioning, tenant isolation and owner, administrator, principal, teacher, staff, parent and student boundaries. Production health reports healthy configuration and database state. No environment secret is stored in the repository or this report.
 
 ## What works
 
@@ -44,6 +44,7 @@ The candidate passes lint, strict TypeScript, 22 unit tests, the optimized produ
 8. The template form exposed raw JSON. It now accepts simple, accessible `grade | description` rows.
 9. Published report cards did not notify families. Linked students and guardians now receive a consent-aware in-app notification to the exact record.
 10. Formal-record navigation and family access were missing. Dedicated report-card and transcript routes are now in the role-aware shell.
+11. The production access directory failed because hosted authentication emails are `varchar` while the RPC declared `text`. The function now casts its stable return shape explicitly; production and the linked schema linter pass.
 
 ## Role and security evidence
 
@@ -107,13 +108,15 @@ The clean database regression verifies:
 | Production build | Pass; 29 page-data jobs and all dynamic routes compiled |
 | Disposable PostgreSQL regression | Pass; all migrations, role matrix, isolation and rollback checks |
 | Secret review | Pass; no environment values added or printed |
+| Linked production schema lint | Pass; no public-schema errors |
+| Production health | Pass; configuration and database healthy on release `d42eb8ef6920` |
 
-## Post-deployment checks
+## Post-deployment evidence
 
-1. Apply `202609170003_formal_academic_records.sql` to the linked Supabase project.
-2. Verify `/api/health` returns healthy configuration and database state.
-3. Sign in as the platform operator and confirm School portfolio, Branches, Owners, Commercials and Onboarding.
-4. Sign in as a school owner and confirm no tenant-creation control appears.
-5. Open Report cards as owner, teacher and family accounts and verify their distinct surfaces.
-6. Generate one test reporting period in a pilot tenant, complete one subject register, submit, approve, publish and verify the linked family notification and printable card.
-7. Run responsive checks at 1440 px, 1024 px and 390 px and confirm keyboard focus through tabs, forms and registers.
+- Applied `202609170003_formal_academic_records.sql` and `202609170004_access_directory_repair.sql` to the linked Supabase project.
+- Verified `/api/health` returns healthy configuration and database state on production release `d42eb8ef6920`.
+- Verified the signed-in school-owner Command Centre has no tenant-creation control and its access directory loads the assigned owner.
+- Verified Report cards is present in role-aware navigation and its owner workspace loads against the production schema.
+- Verified Reports remains actionable with source links, explicit evidence counts, period filters and class/student drill-down.
+
+Named teacher, parent, student, staff, principal and finance users still need to sign off their real pilot accounts. The automated role/RLS suite covers these identities meanwhile. A representative pilot should also complete one report from generation through family publication and validate the 390 px device experience on supported school hardware.
