@@ -13,6 +13,7 @@ const workflows = [
 ];
 
 const releases = [
+  ["Teacher-first academics", "Role-aware class workspaces, class readiness, focused roster, subject and timetable tabs, bulk roster search, and one-click teaching actions."],
   ["School portfolio operations", "Dedicated overview, metrics, school and commercials, branches and owners tabs, with school-level people, communication, academic, finance and operations KPIs."],
   ["Platform portfolio onboarding", "Multi-branch provisioning, multi-owner invitations, school branding, exact locations, portfolio metrics, ARR and school-level drilldowns."],
   ["Owner invitation routing", "Invitation fragments are safely established in-browser, expired links show a recovery path, invitations can be resent, and school owners land in their assigned tenant."],

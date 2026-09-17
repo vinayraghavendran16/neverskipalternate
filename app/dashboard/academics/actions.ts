@@ -36,7 +36,7 @@ export async function createClass(_: AcademicActionState, formData: FormData): P
     return { error: messages[String(field)] || "Check the class details and try again." };
   }
   const { data, error } = await supabase.from("classes").insert({ ...parsed.data, organization_id: context.organizationId }).select("id").single();
-  if (error) return { error: error.code === "23505" ? "That grade and section already exist for this academic year." : error.message };
+  if (error) return { error: error.code === "23505" ? "That grade and section already exist for this academic year." : "The class could not be created. Please retry." };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.class_created", entityType: "class", entityId: data.id, metadata: parsed.data });
   revalidatePath("/dashboard/academics");
   redirect(`/dashboard/academics/classes/${data.id}`);
@@ -49,7 +49,7 @@ export async function createSubject(_: AcademicActionState, formData: FormData):
   const parsed = subjectSchema.safeParse({ name: value(formData, "name"), code: value(formData, "code") });
   if (!parsed.success) return { error: "Enter a subject name and short code." };
   const { data, error } = await supabase.from("subjects").insert({ ...parsed.data, organization_id: context.organizationId }).select("id").single();
-  if (error) return { error: error.code === "23505" ? "That subject code is already in use." : error.message };
+  if (error) return { error: error.code === "23505" ? "That subject code is already in use." : "The subject could not be created. Please retry." };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.subject_created", entityType: "subject", entityId: data.id, metadata: parsed.data });
   revalidatePath("/dashboard/academics");
   return { success: `${parsed.data.name} created.` };
@@ -65,7 +65,7 @@ export async function enrollStudents(_: AcademicActionState, formData: FormData)
   const { data: allowedStudents } = await supabase.from("students").select("id").eq("organization_id", context.organizationId).in("id", studentIds);
   if (!allowedStudents?.length) return { error: "No valid students were selected." };
   const { error } = await supabase.from("class_enrollments").upsert(allowedStudents.map((student) => ({ organization_id: context.organizationId, class_id: classId, student_id: student.id, status: "active" })), { onConflict: "class_id,student_id" });
-  if (error) return { error: error.message };
+  if (error) return { error: "The selected students could not be added. Please retry." };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.students_enrolled", entityType: "class", entityId: classId, metadata: { count: allowedStudents.length } });
   revalidatePath(`/dashboard/academics/classes/${classId}`);
   return { success: `${allowedStudents.length} student${allowedStudents.length === 1 ? "" : "s"} added to the roster.` };
@@ -78,7 +78,7 @@ export async function assignSubject(_: AcademicActionState, formData: FormData):
   const classId = value(formData, "class_id"), subjectId = value(formData, "subject_id"), teacherId = value(formData, "teacher_staff_id") || null;
   if (!classId || !subjectId) return { error: "Select a subject." };
   const { data, error } = await supabase.from("class_subjects").upsert({ organization_id: context.organizationId, class_id: classId, subject_id: subjectId, teacher_staff_id: teacherId }, { onConflict: "class_id,subject_id" }).select("id").single();
-  if (error) return { error: error.message };
+  if (error) return { error: "The subject allocation could not be saved. Please retry." };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.subject_allocated", entityType: "class_subject", entityId: data.id, metadata: { class_id: classId, subject_id: subjectId, teacher_staff_id: teacherId } });
   revalidatePath(`/dashboard/academics/classes/${classId}`);
   return { success: "Subject allocation saved." };
@@ -96,7 +96,7 @@ export async function addTimetableEntry(_: AcademicActionState, formData: FormDa
   };
   if (!classId || !payload.class_subject_id || !payload.weekday || !payload.period_number || !payload.starts_at || !payload.ends_at) return { error: "Complete the timetable slot." };
   const { data, error } = await supabase.from("timetable_entries").upsert(payload, { onConflict: "class_id,weekday,period_number" }).select("id").single();
-  if (error) return { error: error.code === "23505" ? "That period already has a timetable entry." : error.message };
+  if (error) return { error: error.code === "23505" ? "That period already has a timetable entry." : "The timetable slot could not be saved. Please retry." };
   await writeAuditEvent({ organizationId: context.organizationId, action: "academics.timetable_updated", entityType: "timetable_entry", entityId: data.id, metadata: { class_id: classId } });
   revalidatePath(`/dashboard/academics/classes/${classId}`);
   return { success: "Timetable slot saved." };
