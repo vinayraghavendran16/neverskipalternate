@@ -15,6 +15,7 @@ test("attendance treats late as attended and keeps the breakdown", () => {
 });
 
 test("reporting bands use visible, deterministic evidence", () => {
+  assert.equal(reportingBand({ attendanceRate: null, averageScore: null, missingWork: 0 }).key, "no_data");
   assert.equal(reportingBand({ attendanceRate: 72, averageScore: 48, missingWork: 3 }).key, "review");
   assert.equal(reportingBand({ attendanceRate: 82, averageScore: 72, missingWork: 0 }).key, "watch");
   assert.equal(reportingBand({ attendanceRate: 94, averageScore: 81, missingWork: 0 }).key, "on_track");
