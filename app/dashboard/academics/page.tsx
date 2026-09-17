@@ -36,11 +36,13 @@ export default async function AcademicsPage({ searchParams }: { searchParams: Pr
   const subjects = subjectResult.data || [];
   const enrollmentCounts = new Map<string, number>();
   const allocationCounts = new Map<string, number>();
+  const unassignedTeacherCounts = new Map<string, number>();
   const timetableCounts = new Map<string, number>();
   const subjectClassCounts = new Map<string, number>();
   for (const item of enrollmentResult.data || []) enrollmentCounts.set(item.class_id, (enrollmentCounts.get(item.class_id) || 0) + 1);
   for (const item of allocations) {
     allocationCounts.set(item.class_id, (allocationCounts.get(item.class_id) || 0) + 1);
+    if (!item.teacher_staff_id) unassignedTeacherCounts.set(item.class_id, (unassignedTeacherCounts.get(item.class_id) || 0) + 1);
     if (visibleClassIds.has(item.class_id)) subjectClassCounts.set(item.subject_id, (subjectClassCounts.get(item.subject_id) || 0) + 1);
   }
   for (const item of timetableResult.data || []) timetableCounts.set(item.class_id, (timetableCounts.get(item.class_id) || 0) + 1);
@@ -52,8 +54,8 @@ export default async function AcademicsPage({ searchParams }: { searchParams: Pr
 
     {view === "classes" && <section className="card academic-panel"><div className="card-header"><div><h2>{context.role === "teacher" ? "My classes" : "Classes and sections"}</h2><p>Readiness shows what is in place before teaching begins.</p></div><span className="status">{classes.length} class{classes.length === 1 ? "" : "es"}</span></div><div className="class-workspace-grid">{classes.length ? classes.map((item) => {
       const studentCount = enrollmentCounts.get(item.id) || 0, subjectCount = allocationCounts.get(item.id) || 0, periodCount = timetableCounts.get(item.id) || 0;
-      const ready = studentCount > 0 && subjectCount > 0;
-      return <Link className="class-workspace-card" href={`/dashboard/academics/classes/${item.id}`} key={item.id}><header><span className="class-icon">{item.grade.replace(/[^0-9A-Za-z]/g, "").slice(-2) || "CL"}</span><span className={`status ${ready ? "" : "status-warning"}`}>{ready ? "Ready" : "Needs setup"}</span></header><h3>{item.grade} · Section {item.section}</h3><div className="class-readiness"><span><b>{studentCount}</b> students</span><span><b>{subjectCount}</b> subjects</span><span><b>{periodCount}</b> periods</span></div><footer><span>{context.role === "teacher" ? "Open class workspace" : "Manage class"}</span><b>→</b></footer></Link>;
+      const ready = studentCount > 0 && subjectCount > 0 && periodCount > 0 && !unassignedTeacherCounts.get(item.id);
+      return <Link className="class-workspace-card" href={`/dashboard/academics/classes/${item.id}`} key={item.id}><header><span className="class-icon">{item.grade.replace(/[^0-9A-Za-z]/g, "").slice(-2) || "CL"}</span><span className={`status ${ready ? "" : "status-warning"}`}>{ready ? "Ready" : "Needs setup"}</span></header><h3>{item.grade} · Section {item.section}</h3><div className="class-readiness"><span><b>{studentCount}</b> student{studentCount === 1 ? "" : "s"}</span><span><b>{subjectCount}</b> subject{subjectCount === 1 ? "" : "s"}</span><span><b>{periodCount}</b> period{periodCount === 1 ? "" : "s"}</span></div><footer><span>{context.role === "teacher" ? "Open class workspace" : "Manage class"}</span><b>→</b></footer></Link>;
     }) : <div className="empty-state mini-empty"><span>▦</span><h2>{context.role === "teacher" ? "No classes assigned" : "No classes yet"}</h2><p>{context.role === "teacher" ? "Ask an academic manager to allocate you to a subject or class." : "Open Academic setup to create the first class."}</p>{canManage && <Link className="secondary" href="/dashboard/academics?view=setup">Open setup</Link>}</div>}</div></section>}
 
     {view === "subjects" && <section className="card academic-panel"><div className="card-header"><div><h2>Subject catalogue</h2><p>One reusable catalogue across classes, teachers, homework and assessments.</p></div><span className="status">{subjects.length} subjects</span></div><div className="subject-directory">{subjects.map((subject) => <div key={subject.id}><span>{subject.code}</span><div><b>{subject.name}</b><small>{subjectClassCounts.get(subject.id) || 0} class allocation{subjectClassCounts.get(subject.id) === 1 ? "" : "s"}</small></div><span className={`status ${subject.status === "active" ? "" : "status-warning"}`}>{subject.status}</span></div>)}{!subjects.length && <p className="empty-copy">No subjects created yet.</p>}</div>{canManage && <div className="card-body bordered-top academic-inline-editor"><h3 className="section-title">Add a reusable subject</h3><CreateSubjectForm /></div>}</section>}
