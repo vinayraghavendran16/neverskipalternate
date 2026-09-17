@@ -2,12 +2,12 @@ begin;
 create function pg_temp.id(n integer) returns uuid language sql immutable as $$ select ('00000000-0000-0000-0000-'||lpad(n::text,12,'0'))::uuid $$;
 create function pg_temp.assert_true(value boolean, message text) returns void language plpgsql as $$ begin if value is distinct from true then raise exception 'FAIL: %',message; end if; raise notice 'PASS: %',message; end $$;
 create function pg_temp.reject(query text,message text) returns void language plpgsql as $$ declare rejected boolean:=false; begin begin execute query; exception when others then rejected:=true; end; perform pg_temp.assert_true(rejected,message); end $$;
-insert into auth.users(id,email) select pg_temp.id(n),'audit'||n||'@example.test' from generate_series(1,6)n;
+insert into auth.users(id,email) select pg_temp.id(n),'audit'||n||'@example.test' from generate_series(1,8)n;
 insert into public.organizations(id,name,slug) values(pg_temp.id(10),'Audit School','audit-school'),(pg_temp.id(11),'Other School','other-school');
 insert into public.campuses(id,organization_id,name,code) values(pg_temp.id(20),pg_temp.id(10),'Main Campus','MC'),(pg_temp.id(21),pg_temp.id(10),'Other Campus','OC');
 insert into public.academic_years(id,organization_id,name,starts_on,ends_on,status) values(pg_temp.id(30),pg_temp.id(10),'2026','2026-01-01','2026-12-31','active');
-insert into public.memberships(organization_id,user_id,role) values(pg_temp.id(10),pg_temp.id(1),'owner'),(pg_temp.id(10),pg_temp.id(2),'teacher'),(pg_temp.id(10),pg_temp.id(3),'parent'),(pg_temp.id(11),pg_temp.id(4),'owner'),(pg_temp.id(10),pg_temp.id(5),'student'),(pg_temp.id(10),pg_temp.id(6),'administrator');
-insert into public.staff_profiles(id,organization_id,campus_id,user_id,employee_number,first_name,designation) values(pg_temp.id(40),pg_temp.id(10),pg_temp.id(20),pg_temp.id(2),'T1','Teacher','Teacher');
+insert into public.memberships(organization_id,user_id,role) values(pg_temp.id(10),pg_temp.id(1),'owner'),(pg_temp.id(10),pg_temp.id(2),'teacher'),(pg_temp.id(10),pg_temp.id(3),'parent'),(pg_temp.id(11),pg_temp.id(4),'owner'),(pg_temp.id(10),pg_temp.id(5),'student'),(pg_temp.id(10),pg_temp.id(6),'administrator'),(pg_temp.id(10),pg_temp.id(7),'staff'),(pg_temp.id(10),pg_temp.id(8),'principal');
+insert into public.staff_profiles(id,organization_id,campus_id,user_id,employee_number,first_name,designation) values(pg_temp.id(40),pg_temp.id(10),pg_temp.id(20),pg_temp.id(2),'T1','Teacher','Teacher'),(pg_temp.id(41),pg_temp.id(10),pg_temp.id(20),pg_temp.id(7),'S1','Staff','Coordinator');
 insert into public.students(id,organization_id,campus_id,user_id,admission_number,first_name) values(pg_temp.id(50),pg_temp.id(10),pg_temp.id(20),pg_temp.id(5),'S1','Student One'),(pg_temp.id(51),pg_temp.id(10),pg_temp.id(20),null,'S2','Student Two');
 insert into public.guardians(id,organization_id,user_id,first_name,phone) values(pg_temp.id(60),pg_temp.id(10),pg_temp.id(3),'Parent','123');
 insert into public.guardian_relationships(organization_id,student_id,guardian_id,guardian_user_id,relationship) values(pg_temp.id(10),pg_temp.id(50),pg_temp.id(60),pg_temp.id(3),'parent');
@@ -56,10 +56,8 @@ select pg_temp.reject($q$insert into public.homework_submissions(organization_id
 insert into public.leave_requests(organization_id,student_id,leave_type,starts_on,ends_on,reason,requested_by) values(pg_temp.id(10),pg_temp.id(50),'sick','2026-09-15','2026-09-16','Fever',pg_temp.id(3));
 select pg_temp.assert_true((select count(*)=1 from public.leave_requests),'parent can request linked student leave');
 select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
-select pg_temp.assert_true((select count(*)=5 from public.list_organization_access(pg_temp.id(10))),'owner can list tenant-scoped access');
-select pg_temp.assert_true(public.create_owned_school('Second Audit School','second-audit-school','Central Campus','CC') is not null,'owner can create another school atomically');
-select pg_temp.assert_true((select count(*)=1 from public.organizations where slug='second-audit-school'),'created school is visible to its owner');
-select pg_temp.assert_true((select count(*)=1 from public.memberships where organization_id=(select id from public.organizations where slug='second-audit-school') and user_id=pg_temp.id(1) and role='owner'),'school creation grants owner membership');
+select pg_temp.assert_true((select count(*)=7 from public.list_organization_access(pg_temp.id(10))),'owner can list tenant-scoped access');
+select pg_temp.reject($q$select public.create_owned_school('Second Audit School','second-audit-school','Central Campus','CC')$q$,'school owners cannot create platform tenants');
 select set_config('request.jwt.claim.sub',pg_temp.id(6)::text,true);
 select pg_temp.reject($q$update public.memberships set role='staff' where organization_id=pg_temp.id(10) and user_id=pg_temp.id(1)$q$,'administrator cannot demote owner through direct database access');
 select pg_temp.reject($q$update public.memberships set role='administrator' where organization_id=pg_temp.id(10) and user_id=pg_temp.id(2)$q$,'administrator cannot grant administrator through direct database access');
@@ -93,6 +91,10 @@ select pg_temp.reject($q$select public.create_owned_school('Forged School','forg
 select public.report_operational_incident(repeat('b',64),'/dashboard/teacher');
 select pg_temp.assert_true((select count(*)=0 from public.operational_incidents),'teacher can report but cannot read operational incidents');
 select pg_temp.reject($q$insert into public.operational_incidents(organization_id,fingerprint,title,summary,reported_by) values(pg_temp.id(10),repeat('c',64),'Raw','Direct report',pg_temp.id(2))$q$,'members cannot bypass redacted incident RPC');
+select set_config('request.jwt.claim.sub',pg_temp.id(7)::text,true);
+select pg_temp.assert_true((select count(*)=2 from public.students),'staff can support school-wide student operations');
+select pg_temp.reject($q$select public.list_organization_access(pg_temp.id(10))$q$,'staff cannot enumerate organization access');
+select pg_temp.reject($q$select public.create_owned_school('Staff School','staff-school','Main','MS')$q$,'staff cannot create a school tenant');
 select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
 update public.operational_incidents set status='resolved',resolved_by=pg_temp.id(1),resolved_at=now() where fingerprint=repeat('a',64);
 select pg_temp.assert_true((select status='resolved' from public.operational_incidents where fingerprint=repeat('a',64)),'owner can resolve an operational incident');
@@ -136,6 +138,44 @@ update public.attendance_sessions set status='locked';
 set local role authenticated;
 select pg_temp.reject($q$update public.attendance_records set status='present' where student_id=pg_temp.id(50)$q$,'locked attendance rejects direct writes');
 select pg_temp.reject($q$select public.save_attendance_register(pg_temp.id(10),pg_temp.id(70),'2026-09-14',false,jsonb_build_array(jsonb_build_object('student_id',pg_temp.id(50),'status','present'),jsonb_build_object('student_id',pg_temp.id(51),'status','present')))$q$,'locked attendance rejects RPC writes');
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub',pg_temp.id(1)::text,true);
+insert into public.report_card_templates(id,organization_id,name,title,grading_scale,created_by) values(pg_temp.id(140),pg_temp.id(10),'Term format','Term report','[{"grade":"A","label":"Excellent"},{"grade":"B","label":"Secure"}]',pg_temp.id(1));
+insert into public.reporting_periods(id,organization_id,academic_year_id,template_id,name,starts_on,ends_on,created_by) values(pg_temp.id(141),pg_temp.id(10),pg_temp.id(30),pg_temp.id(140),'Term 1','2026-01-01','2026-09-30',pg_temp.id(1));
+select pg_temp.assert_true(public.initialize_report_cards(pg_temp.id(141),pg_temp.id(70))=2,'school leader initializes a complete class report roster');
+select pg_temp.assert_true((select count(*)=2 from public.report_cards where period_id=pg_temp.id(141)),'formal reports include every active student');
+select pg_temp.assert_true((select count(*)=2 from public.report_card_subjects),'formal reports include every class subject for every student');
+select pg_temp.reject($q$update public.report_cards set status='published' where period_id=pg_temp.id(141)$q$,'report cards cannot skip review workflow states');
+select public.save_report_overall_comments(pg_temp.id(141),pg_temp.id(70),jsonb_build_array(
+  jsonb_build_object('report_card_id',(select id from public.report_cards where period_id=pg_temp.id(141) and student_id=pg_temp.id(50)),'overall_comment','Strong progress'),
+  jsonb_build_object('report_card_id',(select id from public.report_cards where period_id=pg_temp.id(141) and student_id=pg_temp.id(51)),'overall_comment','Keep practising')
+));
+select set_config('request.jwt.claim.sub',pg_temp.id(3)::text,true);
+select pg_temp.assert_true((select count(*)=0 from public.report_cards),'family cannot read draft report cards');
+select set_config('request.jwt.claim.sub',pg_temp.id(2)::text,true);
+select pg_temp.reject($q$select public.initialize_report_cards(pg_temp.id(141),pg_temp.id(71))$q$,'subject teachers cannot generate formal records');
+select pg_temp.reject($q$update public.report_cards set overall_comment='Forged' where period_id=pg_temp.id(141)$q$,'subject teachers cannot alter leader comments');
+select public.save_report_subject_register(pg_temp.id(141),pg_temp.id(70),pg_temp.id(90),jsonb_build_array(
+  jsonb_build_object('report_card_id',(select id from public.report_cards where period_id=pg_temp.id(141) and student_id=pg_temp.id(50)),'grade','A','percentage',91,'teacher_comment','Excellent reasoning'),
+  jsonb_build_object('report_card_id',(select id from public.report_cards where period_id=pg_temp.id(141) and student_id=pg_temp.id(51)),'grade','B','percentage',78,'teacher_comment','Secure foundations')
+));
+select pg_temp.assert_true(public.set_report_class_status(pg_temp.id(141),pg_temp.id(70),'submitted')=2,'assigned teacher submits a complete class for review');
+select pg_temp.reject($q$select public.save_report_subject_register(pg_temp.id(141),pg_temp.id(70),pg_temp.id(90),'[]'::jsonb)$q$,'submitted subject register is locked');
+select set_config('request.jwt.claim.sub',pg_temp.id(3)::text,true);
+select pg_temp.assert_true((select count(*)=0 from public.report_cards),'family cannot read submitted report cards');
+select set_config('request.jwt.claim.sub',pg_temp.id(8)::text,true);
+select pg_temp.assert_true(public.set_report_class_status(pg_temp.id(141),pg_temp.id(70),'approved')=2,'principal approves submitted class reports');
+select set_config('request.jwt.claim.sub',pg_temp.id(6)::text,true);
+select pg_temp.assert_true(public.set_report_class_status(pg_temp.id(141),pg_temp.id(70),'published')=2,'administrator publishes approved class reports');
+select set_config('request.jwt.claim.sub',pg_temp.id(3)::text,true);
+select pg_temp.assert_true((select count(*)=1 from public.report_cards),'parent reads only the linked published report card');
+select pg_temp.assert_true((select count(*)=1 from public.report_card_subjects),'parent reads only the linked published subject record');
+select pg_temp.assert_true((select count(*)=1 from public.notifications where title='Report card published'),'parent receives an actionable report-card notification');
+select set_config('request.jwt.claim.sub',pg_temp.id(5)::text,true);
+select pg_temp.assert_true((select count(*)=1 from public.report_cards),'student reads only their own published report card');
+select set_config('request.jwt.claim.sub',pg_temp.id(4)::text,true);
+select pg_temp.assert_true((select count(*)=0 from public.report_cards),'another tenant cannot read published report cards');
 reset role;
 update public.memberships set status='suspended' where user_id=pg_temp.id(2);
 set local role authenticated;

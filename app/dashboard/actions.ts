@@ -16,13 +16,6 @@ function dashboardStatus(kind: "success" | "error", message: string, anchor = "s
   redirect(`/dashboard?admin_${kind}=${encodeURIComponent(message)}#${anchor}`);
 }
 
-const schoolSchema = z.object({
-  name: z.string().trim().min(2).max(160),
-  slug: z.string().trim().min(2).max(80).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  campus_name: z.string().trim().min(2).max(160),
-  campus_code: z.string().trim().min(2).max(24),
-});
-
 export async function switchOrganization(formData: FormData) {
   const context = await getUserContext();
   const organizationId = value(formData, "organization_id");
@@ -30,20 +23,6 @@ export async function switchOrganization(formData: FormData) {
   const cookieStore = await cookies();
   cookieStore.set("northstar_active_organization", organizationId, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 365 });
   redirect("/dashboard");
-}
-
-export async function createSchool(formData: FormData) {
-  const context = await getUserContext();
-  const supabase = await createClient();
-  if (!context || !supabase || context.role !== "owner") dashboardStatus("error", "Only an owner can create another school.");
-  const parsed = schoolSchema.safeParse({ name: value(formData, "name"), slug: value(formData, "slug").toLowerCase(), campus_name: value(formData, "campus_name"), campus_code: value(formData, "campus_code").toUpperCase() });
-  if (!parsed.success) dashboardStatus("error", "Enter a school name, URL slug, branch name and branch code.");
-  const { data, error } = await supabase.rpc("create_owned_school", { p_name: parsed.data.name, p_slug: parsed.data.slug, p_campus_name: parsed.data.campus_name, p_campus_code: parsed.data.campus_code });
-  if (error) dashboardStatus("error", error.code === "23505" ? "That school URL or branch code is already in use." : "The school could not be created. Check the details and retry.");
-  const cookieStore = await cookies();
-  cookieStore.set("northstar_active_organization", data, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 365 });
-  revalidatePath("/dashboard");
-  dashboardStatus("success", `${parsed.data.name} was created. Add an academic year in Academics next.`);
 }
 
 const campusSchema = z.object({ name: z.string().trim().min(2).max(160), code: z.string().trim().min(2).max(24) });

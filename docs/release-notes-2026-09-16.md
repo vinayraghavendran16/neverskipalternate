@@ -64,3 +64,13 @@ This update completes a product-wide audit of the currently delivered Phase 1–
 - Email and SMS delivery providers remain disabled. In-app notifications and channel consent storage are active.
 - Payment gateway processing, offline work queues, admissions and report-card generation are planned work.
 - Ask Northstar, voice input, ElevenLabs and automated voice announcements remain parked by product decision.
+
+## MVP formal-records and system release gate — 17 September 2026
+
+- Added configurable report-card templates and reporting periods without exposing raw JSON configuration.
+- Added atomic class roster generation, subject-teacher registers, leader comments and the enforced draft → submitted → approved → published workflow.
+- Added family-safe printable report cards, cumulative transcripts and exact-record in-app publication notifications.
+- Added report cards to role-aware navigation for school users and families.
+- Removed tenant creation from the school-owner Command Centre and revoked the legacy authenticated provisioning function. New schools remain exclusive to the allowlisted platform console.
+- Expanded the isolated authorization suite to cover platform operator, school owner, administrator, principal, teacher, staff, parent, student and cross-tenant access.
+- Added the full MVP system status, dependencies and decision register in `docs/mvp-uat-release-gate-2026-09-17.md`.
