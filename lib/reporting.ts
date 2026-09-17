@@ -41,6 +41,7 @@ export function periodStart(period: string, now = new Date()) {
 }
 
 export function reportingBand({ attendanceRate, averageScore, missingWork }: { attendanceRate: number | null; averageScore: number | null; missingWork: number }) {
+  if (attendanceRate === null && averageScore === null && missingWork === 0) return { key: "no_data", label: "No evidence", reasons: [] } as const;
   const reasons: string[] = [];
   if (attendanceRate !== null && attendanceRate < 75) reasons.push(`attendance ${attendanceRate}%`);
   if (averageScore !== null && averageScore < 50) reasons.push(`average ${averageScore}%`);

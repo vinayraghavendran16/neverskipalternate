@@ -777,3 +777,4 @@ button, .secondary, .primary, .row-link { min-height: 44px; }
 @media(max-width:1100px){.report-overview{grid-template-columns:1fr}.report-method>div{grid-template-columns:1fr 1fr}.report-kpis{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.report-head{align-items:stretch}.report-period{grid-template-columns:1fr auto}.report-period label{grid-column:1/-1}.report-tabs a{flex:0 0 auto}.family-signal-body{grid-template-columns:1fr}.subject-report-grid,.attendance-breakdown{grid-template-columns:1fr 1fr}.report-method>div{grid-template-columns:1fr}}
 @media(max-width:520px){.page-head-actions{align-items:stretch;flex-direction:column}.report-kpis,.subject-report-grid,.attendance-breakdown{grid-template-columns:1fr}.report-trust-note{flex-direction:column}.report-period{width:100%}}
+.signal-pill.neutral,.signal-pill.no-data{color:var(--muted);background:#eef1ed}
