@@ -246,6 +246,30 @@ export type Database = {
         Update: { status?:string; acknowledged_by?:string|null; acknowledged_at?:string|null; resolved_by?:string|null; resolved_at?:string|null };
         Relationships: [];
       };
+      report_card_templates: {
+        Row: { id:string; organization_id:string; name:string; title:string; grading_scale:Json; show_percentage:boolean; show_attendance:boolean; show_teacher_comments:boolean; status:string; created_by:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; name:string; title:string; grading_scale?:Json; show_percentage?:boolean; show_attendance?:boolean; show_teacher_comments?:boolean; status?:string; created_by:string };
+        Update: { name?:string; title?:string; grading_scale?:Json; show_percentage?:boolean; show_attendance?:boolean; show_teacher_comments?:boolean; status?:string };
+        Relationships: [];
+      };
+      reporting_periods: {
+        Row: { id:string; organization_id:string; academic_year_id:string; template_id:string; name:string; starts_on:string; ends_on:string; status:string; created_by:string } & Timestamped;
+        Insert: { id?:string; organization_id:string; academic_year_id:string; template_id:string; name:string; starts_on:string; ends_on:string; status?:string; created_by:string };
+        Update: { name?:string; starts_on?:string; ends_on?:string; status?:string; template_id?:string };
+        Relationships: [];
+      };
+      report_cards: {
+        Row: { id:string; organization_id:string; period_id:string; class_id:string; student_id:string; template_id:string; status:string; overall_comment:string|null; created_by:string; submitted_at:string|null; reviewed_by:string|null; reviewed_at:string|null; published_at:string|null } & Timestamped;
+        Insert: { id?:string; organization_id:string; period_id:string; class_id:string; student_id:string; template_id:string; status?:string; overall_comment?:string|null; created_by:string; submitted_at?:string|null; reviewed_by?:string|null; reviewed_at?:string|null; published_at?:string|null };
+        Update: { status?:string; overall_comment?:string|null; submitted_at?:string|null; reviewed_by?:string|null; reviewed_at?:string|null; published_at?:string|null };
+        Relationships: [];
+      };
+      report_card_subjects: {
+        Row: { id:string; organization_id:string; report_card_id:string; class_subject_id:string; grade:string|null; percentage:number|null; teacher_comment:string|null; updated_by:string|null } & Timestamped;
+        Insert: { id?:string; organization_id:string; report_card_id:string; class_subject_id:string; grade?:string|null; percentage?:number|null; teacher_comment?:string|null; updated_by?:string|null };
+        Update: { grade?:string|null; percentage?:number|null; teacher_comment?:string|null; updated_by?:string|null };
+        Relationships: [];
+      };
       audit_events: {
         Row: { id: number; organization_id: string; actor_user_id: string | null; action: string; entity_type: string; entity_id: string | null; metadata: Json; occurred_at: string };
         Insert: { organization_id: string; actor_user_id?: string | null; action: string; entity_type: string; entity_id?: string | null; metadata?: Json };
@@ -274,6 +298,10 @@ export type Database = {
       platform_set_school_archived: { Args: { p_org:string; p_archived:boolean; p_reason:string; p_actor_user:string }; Returns:boolean };
       platform_school_metrics: { Args: { p_org:string }; Returns:Json };
       list_organization_access: { Args: { p_org:string }; Returns:{ membership_id:string; user_id:string; full_name:string; email:string; role:AppRole; status:string; campus_id:string|null }[] };
+      initialize_report_cards: { Args: { p_period:string; p_class:string }; Returns:number };
+      save_report_subject_register: { Args: { p_period:string; p_class:string; p_class_subject:string; p_rows:Json }; Returns:number };
+      save_report_overall_comments: { Args: { p_period:string; p_class:string; p_rows:Json }; Returns:number };
+      set_report_class_status: { Args: { p_period:string; p_class:string; p_status:string }; Returns:number };
     };
     Enums: { app_role: AppRole };
     CompositeTypes: Record<string, never>;
