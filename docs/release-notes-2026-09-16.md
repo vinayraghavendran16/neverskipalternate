@@ -2,6 +2,8 @@
 
 ## Platform portfolio onboarding
 
+- Rebuilt Academics as a teacher-first workspace with assigned-class visibility, setup readiness, full-width class tabs, bulk roster search and direct teaching actions.
+
 - Added multi-branch school provisioning with exact addresses, optional map coordinates, and branch contacts.
 - Added multi-owner invitation and a platform-only owner directory with activation state and accountable-contact metadata.
 - Added school websites, public tenant logos, board/type details, affiliation data, onboarding stage and customer-success ownership.

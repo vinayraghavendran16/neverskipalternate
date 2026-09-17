@@ -1,17 +1,21 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useMemo, useState } from "react";
 import { addTimetableEntry, assignSubject, enrollStudents, type AcademicActionState } from "@/app/dashboard/academics/actions";
 
 const initial: AcademicActionState = {};
 
 export function EnrollmentForm({ classId, students }: { classId: string; students: { id: string; name: string; admissionNumber: string }[] }) {
   const [state, action, pending] = useActionState(enrollStudents, initial);
+  const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const visible = useMemo(() => { const normalized = query.trim().toLowerCase(); return normalized ? students.filter((student) => `${student.name} ${student.admissionNumber}`.toLowerCase().includes(normalized)) : students; }, [query, students]);
   if (!students.length) return <p className="empty-copy">Every active student is already enrolled in this class.</p>;
   return <form className="enrollment-form" action={action}><input type="hidden" name="class_id" value={classId} />
-    <div className="student-picker">{students.map((student) => <label key={student.id}><input type="checkbox" name="student_ids" value={student.id} /><span><b>{student.name}</b><small>{student.admissionNumber}</small></span></label>)}</div>
+    <div className="student-picker-tools"><label className="field"><span className="sr-only">Search students</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name or admission number" /></label><button className="text-button" type="button" onClick={() => setSelected((current) => { const next = new Set(current); const everyVisibleSelected = visible.every((student) => next.has(student.id)); visible.forEach((student) => everyVisibleSelected ? next.delete(student.id) : next.add(student.id)); return next; })}>{visible.length > 0 && visible.every((student) => selected.has(student.id)) ? "Clear visible" : "Select visible"}</button><span>{selected.size} selected</span></div>
+    <div className="student-picker">{visible.map((student) => <label key={student.id}><input type="checkbox" name="student_ids" value={student.id} checked={selected.has(student.id)} onChange={() => setSelected((current) => { const next = new Set(current); if (next.has(student.id)) next.delete(student.id); else next.add(student.id); return next; })} /><span><b>{student.name}</b><small>{student.admissionNumber}</small></span></label>)}{!visible.length && <p className="empty-copy student-search-empty">No students match that search.</p>}</div>
     {state.error && <p className="form-error" role="alert">{state.error}</p>}{state.success && <p className="form-success" role="status">{state.success}</p>}
-    <button className="secondary" type="submit" disabled={pending}>{pending ? "Adding…" : "Add selected students"}</button>
+    <button className="secondary" type="submit" disabled={pending || selected.size === 0}>{pending ? "Adding…" : `Add ${selected.size || "selected"} student${selected.size === 1 ? "" : "s"}`}</button>
   </form>;
 }
 
